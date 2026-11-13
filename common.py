@@ -1,0 +1,33 @@
+import re, time, threading, requests
+
+UA = "IL-JobWatch/0.1 (personal job search; low-volume)"
+_s = requests.Session()
+_s.headers["User-Agent"] = UA
+_last = {}
+_lock = threading.Lock()
+DELAY = 1.0  # seconds between requests to the same host
+
+
+def get(url, **kw):
+    host = re.sub(r"^https?://([^/]+).*", r"\1", url)
+    with _lock:
+        wait = _last.get(host, 0) + DELAY - time.time()
+        _last[host] = max(time.time(), _last.get(host, 0) + DELAY)
+    if wait > 0:
+        time.sleep(wait)
+    kw.setdefault("timeout", 20)
+    try:
+        return _s.get(url, **kw)
+    except requests.RequestException:
+        return None
+
+
+def slug_candidates(name, domain):
+    base = domain.split(".")[0].lower()
+    n = re.sub(r"[^a-z0-9]+", "", name.lower())
+    nd = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    out = []
+    for s in (base, n, nd, base + "hq", base + "inc"):
+        if s and s not in out:
+            out.append(s)
+    return out
