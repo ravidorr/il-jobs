@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Keep the lockfile in sync with package.json. Reports drift; does not rewrite history.
+npm install --package-lock-only >/dev/null 2>&1
+if ! git diff --quiet -- package-lock.json; then
+  echo "post-commit: package-lock.json changed after install. Review and commit it." >&2
+fi

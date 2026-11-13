@@ -1,13 +1,26 @@
 """Find careers_url + ATS for each seed company. Writes data/companies.json"""
-import csv, json, re, sys
-from concurrent.futures import ThreadPoolExecutor
-from common import get, slug_candidates
-from adapters import ADAPTERS
 
+import csv
+import glob
+import json
+import re
+import sys
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any
+
+from adapters import ADAPTERS
+from common import get, slug_candidates
+
+HTTP_OK = 200
+MIN_DST_ARGS = 2
 PROBE_ORDER = ["greenhouse", "lever", "ashby", "workable", "smartrecruiters"]
 ATS_LINK = [
     ("comeet", re.compile(r"comeet\.com/jobs/([A-Za-z0-9_.\-]+/[A-Z0-9.]+)", re.I)),
-    ("greenhouse", re.compile(r"(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io/(?:embed/job_board\?for=)?([A-Za-z0-9_\-]+)", re.I)),
+    (
+        "greenhouse",
+        re.compile(r"(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io/(?:embed/job_board\?for=)?([A-Za-z0-9_\-]+)", re.I),
+    ),
     ("lever", re.compile(r"jobs\.lever\.co/([A-Za-z0-9_\-]+)", re.I)),
     ("ashby", re.compile(r"jobs\.ashbyhq\.com/([A-Za-z0-9_.\-%]+)", re.I)),
     ("workable", re.compile(r"apply\.workable\.com/([A-Za-z0-9_\-]+)", re.I)),
@@ -16,9 +29,9 @@ ATS_LINK = [
 CAREER_PATHS = ["/careers", "/jobs", "/careers/", "/company/careers", "/about/careers", "/join-us", "/careers/jobs"]
 
 
-def scan_page(url):
+def scan_page(url: str) -> tuple[str | None, str | None]:
     r = get(url)
-    if r is None or r.status_code != 200:
+    if r is None or r.status_code != HTTP_OK:
         return None, None
     for ats, rx in ATS_LINK:
         m = rx.search(r.text)
@@ -27,40 +40,69 @@ def scan_page(url):
     return None, r.url
 
 
-ISRAEL = re.compile(r"israel|tel[ -]?aviv|jerusalem|haifa|herzliya|ra'?anana|petah|petach|ramat|netanya|rehovot|yokneam|kfar|beer[ -]?sheva|holon|rishon|hod hasharon|airport city|\bIL\b", re.I)
+ISRAEL = re.compile(
+    r"israel|tel[ -]?aviv|jerusalem|haifa|herzliya|ra'?anana|petah|petach|ramat|netanya|rehovot|yokneam|kfar"
+    r"|beer[ -]?sheva|holon|rishon|hod hasharon|airport city|\bIL\b",
+    re.I,
+)
 
 
-def israel_count(jobs):
+def israel_count(jobs: list[dict[str, Any]]) -> int:
     return sum(1 for j in jobs if ISRAEL.search(j["location"] or ""))
 
 
-import glob
-OVERRIDES = {}
-for _p in ["data/overrides.json"] + sorted(glob.glob("data/new/*_overrides.json")):   # agents add data/new/<segment>_overrides.json
-    OVERRIDES.update(json.load(open(_p)))
+def load_overrides() -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    # agents add data/new/<segment>_overrides.json
+    for _p in ["data/overrides.json", *sorted(glob.glob("data/new/*_overrides.json"))]:
+        with open(_p) as fh:
+            out.update(json.load(fh))
+    return out
 
 
-def discover(row):
+OVERRIDES = load_overrides()
+
+
+def discover(row: dict[str, str]) -> dict[str, Any]:  # noqa: PLR0912
     name, domain = row["name"], row["domain"]
-    res = dict(name=name, domain=domain, careers_url="", ats="", slug="", source="", status="unknown", n_jobs=None, n_israel=None)
+    res: dict[str, Any] = {
+        "name": name,
+        "domain": domain,
+        "careers_url": "",
+        "ats": "",
+        "slug": "",
+        "source": "",
+        "status": "unknown",
+        "n_jobs": None,
+        "n_israel": None,
+    }
     ov = OVERRIDES.get(name)
     if ov:
-        res.update(ats=ov["ats"], slug=ov["slug"], source="override", careers_url=ov["slug"] if ov["ats"] == "browser" else "")
+        res.update(
+            ats=ov["ats"], slug=ov["slug"], source="override", careers_url=ov["slug"] if ov["ats"] == "browser" else ""
+        )
         if ov["ats"] == "browser":
-            res["status"] = "ok"          # verified at crawl time
+            res["status"] = "ok"  # verified at crawl time
             print(f"{name:25s} ok(browser)        {ov['slug']}", flush=True)
             return res
         if ov.get("verify") is False:
-            res["status"] = "ok"          # trusted: verified at crawl time (this network cannot reach it)
+            res["status"] = "ok"  # trusted: verified at crawl time (this network cannot reach it)
             print(f"{name:25s} ok(unverified)      {ov['ats']} {ov['slug']}", flush=True)
             return res
         jobs = ADAPTERS[ov["ats"]](ov["slug"])
-        res.update(status="ok" if jobs is not None else "ats_failed", n_jobs=None if jobs is None else len(jobs),
-                   n_israel=None if jobs is None else israel_count(jobs))
-        print(f"{name:25s} {res['status']:18s} {ov['ats']:15s} {ov['slug']:30s} {res['n_jobs']} il={res['n_israel']} src=override", flush=True)
+        res.update(
+            status="ok" if jobs is not None else "ats_failed",
+            n_jobs=None if jobs is None else len(jobs),
+            n_israel=None if jobs is None else israel_count(jobs),
+        )
+        print(
+            f"{name:25s} {res['status']:18s} {ov['ats']:15s} {ov['slug']:30s} "
+            f"{res['n_jobs']} il={res['n_israel']} src=override",
+            flush=True,
+        )
         return res
     # 1. look at the real career pages first (most reliable, finds comeet)
-    for p in ["/"] + CAREER_PATHS:
+    for p in ["/", *CAREER_PATHS]:
         for host in (f"https://www.{domain}", f"https://{domain}"):
             ats, val = scan_page(host + p)
             if ats:
@@ -91,20 +133,31 @@ def discover(row):
         res["status"] = "careers_page_only"
     else:
         res["status"] = "not_found"
-    print(f"{name:25s} {res['status']:18s} {res['ats']:15s} {res['slug']:30s} {res['n_jobs']} il={res['n_israel']} src={res['source']}", flush=True)
+    print(
+        f"{name:25s} {res['status']:18s} {res['ats']:15s} {res['slug']:30s} "
+        f"{res['n_jobs']} il={res['n_israel']} src={res['source']}",
+        flush=True,
+    )
     return res
 
 
-if __name__ == "__main__":
+def main() -> None:
     src = sys.argv[1] if len(sys.argv) > 1 else "data/seed_companies.csv"
-    dst = sys.argv[2] if len(sys.argv) > 2 else "data/companies.json"
-    rows = list(csv.DictReader(open(src)))
-    seen, uniq = set(), []
+    dst = sys.argv[2] if len(sys.argv) > MIN_DST_ARGS else "data/companies.json"
+    with open(src) as fh:
+        rows = list(csv.DictReader(fh))
+    seen: set[str] = set()
+    uniq: list[dict[str, str]] = []
     for r in rows:
         if r["domain"] not in seen:
-            seen.add(r["domain"]); uniq.append(r)
+            seen.add(r["domain"])
+            uniq.append(r)
     with ThreadPoolExecutor(8) as ex:
         out = list(ex.map(discover, uniq))
-    json.dump(out, open(dst, "w"), indent=1, ensure_ascii=False)
-    from collections import Counter
+    with open(dst, "w") as fh:
+        json.dump(out, fh, indent=1, ensure_ascii=False)
     print(Counter(r["status"] for r in out))
+
+
+if __name__ == "__main__":
+    main()

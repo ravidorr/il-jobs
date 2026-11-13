@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -17,6 +17,8 @@ h1{font-size:20px;margin:0}
 .stats{color:var(--muted);font-size:13px}
 .bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;border-bottom:1px solid var(--line)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.mt{margin-top:8px}
+.grow{flex:1}
 input[type=search],select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-height:38px}
 input[type=search]{flex:1 1 220px}
 .chip{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer;min-height:34px}
@@ -56,23 +58,23 @@ li.gone button.discard:hover{border-color:var(--accent);color:var(--accent)}
     <select id="loc" aria-label="Location"><option value="il">Israel only</option><option value="all">All locations</option></select>
     <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="co">Company A-Z</option><option value="title">Title A-Z</option></select>
   </div>
-  <div class="row" style="margin-top:8px">
-    <button class="chip" data-cat="pm" aria-pressed="false">Product</button>
-    <button class="chip" data-cat="junior" aria-pressed="false">Student / junior / intern</button>
-    <button class="chip" data-cat="other" aria-pressed="false">Other</button>
+  <div class="row mt">
+    <button type="button" class="chip" data-cat="pm" aria-pressed="false">Product</button>
+    <button type="button" class="chip" data-cat="junior" aria-pressed="false">Student / junior / intern</button>
+    <button type="button" class="chip" data-cat="other" aria-pressed="false">Other</button>
     <label class="tg"><input type="checkbox" id="onlyNew"> New only</label>
     <label class="tg"><input type="checkbox" id="hideStale"> Hide stale</label>
     <label class="tg"><input type="checkbox" id="showGone"> Show discarded (<span id="goneN">0</span>)</label>
-    <button class="link" id="reset">Reset filters</button>
-    <span style="flex:1"></span>
-    <button class="link" id="exp">Export discards</button>
-    <button class="link" id="imp">Import</button>
+    <button type="button" class="link" id="reset">Reset filters</button>
+    <span class="grow"></span>
+    <button type="button" class="link" id="exp">Export discards</button>
+    <button type="button" class="link" id="imp">Import</button>
     <input type="file" id="file" accept="application/json" hidden>
   </div>
 </div>
-<details class="gaps" id="gaps" hidden></details>
+<details class="gaps" id="gaps" hidden><summary>Coverage gaps</summary></details>
 <ul id="list"></ul>
-<button class="chip more" id="more" hidden>Show more</button>
+<button type="button" class="chip more" id="more" hidden>Show more</button>
 <p class="foot">Discards are saved in this browser only. Use Export and Import to move them to another device. Data updated <span id="upd"></span>.</p>
 </div>
 <script type="application/json" id="data">__DATA__</script>
@@ -125,7 +127,7 @@ function render(){
     var g=!!gone[key(j)],li=document.createElement('li');
     li.className='job'+(g?' gone':'');
     var meta=[j.l?'<span>'+esc(j.l)+'</span>':'',j.m?'<span>'+esc(j.m)+'</span>':'','<span>first seen '+esc(j.f)+'</span>'].join('');
-    li.innerHTML='<div><div class="co">'+esc(j.c)+'</div><div class="title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a>'+(j.n?'<span class="badge b-new">NEW</span>':'')+(j.k==='pm'?'<span class="badge b-pm">PM</span>':'')+(j.s?'<span class="badge b-stale" title="This company could not be crawled in the latest run. Listing may be out of date.">STALE</span>':'')+'</div><div class="meta">'+meta+'</div></div><div class="act"><button class="discard" data-k="'+esc(key(j))+'">'+(g?'Restore':'Discard')+'</button></div>';
+    li.innerHTML='<div><div class="co">'+esc(j.c)+'</div><div class="title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a>'+(j.n?'<span class="badge b-new">NEW</span>':'')+(j.k==='pm'?'<span class="badge b-pm">PM</span>':'')+(j.s?'<span class="badge b-stale" title="This company could not be crawled in the latest run. Listing may be out of date.">STALE</span>':'')+'</div><div class="meta">'+meta+'</div></div><div class="act"><button type="button" class="discard" data-k="'+esc(key(j))+'">'+(g?'Restore':'Discard')+'</button></div>';
     frag.appendChild(li)});
   ul.appendChild(frag);
   $('more').hidden=res.length<=shown;

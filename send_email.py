@@ -1,12 +1,17 @@
 """Send the digest of new jobs via Gmail SMTP, then mark them reported.
 Env: GMAIL_USER, GMAIL_APP_PASSWORD, DIGEST_TO (optional, defaults to GMAIL_USER).
 `--dry-run` prints what would be sent and changes nothing."""
-import os, smtplib, sqlite3, sys
+
+import os
+import smtplib
+import sqlite3
+import sys
 from email.message import EmailMessage
-from digest import select, render, DB
+
+from digest import DB, render, select
 
 
-def main():
+def main() -> None:
     dry = "--dry-run" in sys.argv
     c = sqlite3.connect(DB)
     jobs = select(c)

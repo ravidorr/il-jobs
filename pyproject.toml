@@ -1,0 +1,62 @@
+[project]
+name = "misra"
+version = "0.1.0"
+description = "Daily batch pipeline: crawls career pages, keeps history in SQLite, and emails a digest."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+  "requests",
+  "playwright==1.63.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "pytest-asyncio",
+  "ruff",
+  "mypy",
+  "types-requests",
+]
+
+[tool.setuptools]
+py-modules = [
+  "adapters",
+  "browser_crawl",
+  "build_dashboard",
+  "common",
+  "digest",
+  "discover",
+  "run",
+  "send_email",
+  "survey",
+  "survey2",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "PL", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+omit = ["tests/*", ".venv/*", "node_modules/*", "scripts/*"]
+
+[tool.coverage.report]
+# 100% is mandatory on push and in CI. Do not lower this.
+fail_under = 100
+show_missing = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["adapters.py", "browser_crawl.py", "build_dashboard.py", "common.py", "digest.py", "discover.py", "run.py", "send_email.py", "survey.py", "survey2.py"]
