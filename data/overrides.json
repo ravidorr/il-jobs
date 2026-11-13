@@ -81,7 +81,7 @@
  },
  "Hibob": {
   "ats": "browser",
-  "slug": "https://www.hibob.com/careers/"
+  "slug": "https://hibob-fa0ad69d0cb34a.careers.hibob.com/jobs"
  },
  "Unity": {
   "ats": "browser",
@@ -93,6 +93,6 @@
  },
  "Sapiens": {
   "ats": "browser",
-  "slug": "https://sapiens.careers.hibob.com/"
+  "slug": "https://sapiens.careers.hibob.com/jobs"
  }
 }

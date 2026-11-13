@@ -205,7 +205,7 @@
   "slug": "wizinc",
   "source": "guess",
   "status": "ok",
-  "n_jobs": 111,
+  "n_jobs": 110,
   "n_israel": 27
  },
  {
@@ -282,7 +282,7 @@
   "slug": "axonius",
   "source": "guess",
   "status": "ok",
-  "n_jobs": 21,
+  "n_jobs": 22,
   "n_israel": 7
  },
  {
@@ -469,7 +469,7 @@
   "slug": "appsflyer",
   "source": "guess",
   "status": "ok",
-  "n_jobs": 55,
+  "n_jobs": 56,
   "n_israel": 29
  },
  {
@@ -552,9 +552,9 @@
  {
   "name": "Hibob",
   "domain": "hibob.com",
-  "careers_url": "https://www.hibob.com/careers/",
+  "careers_url": "https://hibob-fa0ad69d0cb34a.careers.hibob.com/jobs",
   "ats": "browser",
-  "slug": "https://www.hibob.com/careers/",
+  "slug": "https://hibob-fa0ad69d0cb34a.careers.hibob.com/jobs",
   "source": "override",
   "status": "ok",
   "n_jobs": null,
@@ -706,9 +706,9 @@
  {
   "name": "Sapiens",
   "domain": "sapiens.com",
-  "careers_url": "https://sapiens.careers.hibob.com/",
+  "careers_url": "https://sapiens.careers.hibob.com/jobs",
   "ats": "browser",
-  "slug": "https://sapiens.careers.hibob.com/",
+  "slug": "https://sapiens.careers.hibob.com/jobs",
   "source": "override",
   "status": "ok",
   "n_jobs": null,
