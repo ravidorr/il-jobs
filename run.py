@@ -16,11 +16,18 @@ def init():
       PRIMARY KEY(company, job_id));
     CREATE TABLE IF NOT EXISTS crawl_log(ts TEXT, company TEXT, ats TEXT, ok INTEGER, n_jobs INTEGER);
     """)
+    try:
+        c.execute("ALTER TABLE crawl_log ADD COLUMN note TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already there
     return c
 
 
 def crawl(co):
     jobs = ADAPTERS[co["ats"]](co["slug"])
+    if jobs is None:            # one retry: most failures are transient rate limits
+        time.sleep(4)
+        jobs = ADAPTERS[co["ats"]](co["slug"])
     return co, jobs
 
 
@@ -44,7 +51,13 @@ def main():
     failed = []
     for co, jobs in results:
         name = co["name"]
-        c.execute("INSERT INTO crawl_log VALUES(?,?,?,?,?)", (now, name, co["ats"], jobs is not None, len(jobs or [])))
+        note = ""
+        if jobs is None:
+            note = WHY.get(co["slug"], "request failed")
+        elif not jobs and co["ats"] == "browser":
+            note = WHY.get(co["slug"], "")
+        c.execute("INSERT INTO crawl_log(ts,company,ats,ok,n_jobs,note) VALUES(?,?,?,?,?,?)",
+                  (now, name, co["ats"], jobs is not None, len(jobs or []), note))
         if jobs is None:
             failed.append(name)      # never close jobs when the crawl failed
             continue

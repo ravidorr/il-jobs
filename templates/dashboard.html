@@ -37,7 +37,7 @@ li.job.gone{opacity:.5}
 button.discard{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit;min-height:38px}
 button.discard:hover{border-color:var(--danger);color:var(--danger)}
 li.gone button.discard:hover{border-color:var(--accent);color:var(--accent)}
-.empty{color:var(--muted);text-align:center;padding:40px 0}
+.gaps{margin:10px 0 0;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:13px}.gaps summary{cursor:pointer;color:var(--text)}.gaps ul{margin:8px 0 0;display:block}.gaps li{margin:4px 0;color:var(--muted)}.gaps b{color:var(--text)}.b-stale{background:#fdf0dc;color:var(--warn)}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .b-stale{background:#3a2d14}}.empty{color:var(--muted);text-align:center;padding:40px 0}
 .more{display:block;margin:14px auto;padding:10px 18px}
 .foot{color:var(--muted);font-size:12px;margin:20px 0 8px}
 @media (max-width:560px){.bar{position:static}li.job{grid-template-columns:1fr}.act{grid-column:1;grid-row:auto}button.discard{width:100%}}
@@ -61,6 +61,7 @@ li.gone button.discard:hover{border-color:var(--accent);color:var(--accent)}
     <button class="chip" data-cat="junior" aria-pressed="false">Student / junior / intern</button>
     <button class="chip" data-cat="other" aria-pressed="false">Other</button>
     <label class="tg"><input type="checkbox" id="onlyNew"> New only</label>
+    <label class="tg"><input type="checkbox" id="hideStale"> Hide stale</label>
     <label class="tg"><input type="checkbox" id="showGone"> Show discarded (<span id="goneN">0</span>)</label>
     <button class="link" id="reset">Reset filters</button>
     <span style="flex:1"></span>
@@ -69,6 +70,7 @@ li.gone button.discard:hover{border-color:var(--accent);color:var(--accent)}
     <input type="file" id="file" accept="application/json" hidden>
   </div>
 </div>
+<details class="gaps" id="gaps" hidden></details>
 <ul id="list"></ul>
 <button class="chip more" id="more" hidden>Show more</button>
 <p class="foot">Discards are saved in this browser only. Use Export and Import to move them to another device. Data updated <span id="upd"></span>.</p>
@@ -83,7 +85,7 @@ var LS_D='il-jobs-discarded-v1',LS_F='il-jobs-filters-v1';
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var gone=lsGet(LS_D,{});
-var F=Object.assign({q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false},lsGet(LS_F,{}));
+var F=Object.assign({q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false,hideStale:false},lsGet(LS_F,{}));
 function key(j){return j.c+'|'+j.i}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
 var companies=Array.from(new Set(JOBS.map(function(j){return j.c}))).sort(function(a,b){return a.localeCompare(b)});
@@ -91,7 +93,7 @@ companies.forEach(function(c){var o=document.createElement('option');o.value=c;o
 $('upd').textContent=DATA.generated;
 function sync(){
   $('q').value=F.q;$('company').value=F.company;$('loc').value=F.loc;$('sort').value=F.sort;
-  $('onlyNew').checked=F.onlyNew;$('showGone').checked=F.showGone;
+  $('onlyNew').checked=F.onlyNew;$('hideStale').checked=F.hideStale;$('showGone').checked=F.showGone;
   document.querySelectorAll('.chip[data-cat]').forEach(function(b){b.setAttribute('aria-pressed',F.cats.indexOf(b.dataset.cat)>=0)});
 }
 function filtered(){
@@ -103,6 +105,7 @@ function filtered(){
     if(F.company&&j.c!==F.company)return false;
     if(F.cats.length&&F.cats.indexOf(j.k)<0)return false;
     if(F.onlyNew&&!j.n)return false;
+    if(F.hideStale&&j.s)return false;
     if(terms.length){var hay=(j.c+' '+j.t+' '+j.m+' '+j.l).toLowerCase();for(var x=0;x<terms.length;x++)if(hay.indexOf(terms[x])<0)return false}
     return true});
   out.sort(function(a,b){
@@ -122,7 +125,7 @@ function render(){
     var g=!!gone[key(j)],li=document.createElement('li');
     li.className='job'+(g?' gone':'');
     var meta=[j.l?'<span>'+esc(j.l)+'</span>':'',j.m?'<span>'+esc(j.m)+'</span>':'','<span>first seen '+esc(j.f)+'</span>'].join('');
-    li.innerHTML='<div><div class="co">'+esc(j.c)+'</div><div class="title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a>'+(j.n?'<span class="badge b-new">NEW</span>':'')+(j.k==='pm'?'<span class="badge b-pm">PM</span>':'')+'</div><div class="meta">'+meta+'</div></div><div class="act"><button class="discard" data-k="'+esc(key(j))+'">'+(g?'Restore':'Discard')+'</button></div>';
+    li.innerHTML='<div><div class="co">'+esc(j.c)+'</div><div class="title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a>'+(j.n?'<span class="badge b-new">NEW</span>':'')+(j.k==='pm'?'<span class="badge b-pm">PM</span>':'')+(j.s?'<span class="badge b-stale" title="This company could not be crawled in the latest run. Listing may be out of date.">STALE</span>':'')+'</div><div class="meta">'+meta+'</div></div><div class="act"><button class="discard" data-k="'+esc(key(j))+'">'+(g?'Restore':'Discard')+'</button></div>';
     frag.appendChild(li)});
   ul.appendChild(frag);
   $('more').hidden=res.length<=shown;
@@ -133,15 +136,23 @@ $('q').addEventListener('input',function(){F.q=this.value;upd()});
 $('company').addEventListener('change',function(){F.company=this.value;upd()});
 $('loc').addEventListener('change',function(){F.loc=this.value;upd()});
 $('sort').addEventListener('change',function(){F.sort=this.value;upd()});
+$('hideStale').addEventListener('change',function(){F.hideStale=this.checked;upd()});
 $('onlyNew').addEventListener('change',function(){F.onlyNew=this.checked;upd()});
 $('showGone').addEventListener('change',function(){F.showGone=this.checked;upd()});
 document.querySelectorAll('.chip[data-cat]').forEach(function(b){b.addEventListener('click',function(){var c=b.dataset.cat,i=F.cats.indexOf(c);if(i>=0)F.cats.splice(i,1);else F.cats.push(c);sync();upd()})});
-$('reset').addEventListener('click',function(){F={q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false};sync();upd()});
+$('reset').addEventListener('click',function(){F={q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false,hideStale:false};sync();upd()});
 $('more').addEventListener('click',function(){shown+=PAGE;render()});
 $('list').addEventListener('click',function(e){var b=e.target.closest('button.discard');if(!b)return;var k=b.dataset.k;if(gone[k])delete gone[k];else gone[k]=new Date().toISOString().slice(0,10);lsSet(LS_D,gone);render()});
 $('exp').addEventListener('click',function(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(gone,null,1)],{type:'application/json'}));a.download='discarded-jobs.json';a.click()});
 $('imp').addEventListener('click',function(){$('file').click()});
 $('file').addEventListener('change',function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d&&typeof d==='object'){Object.assign(gone,d);lsSet(LS_D,gone);render()}}catch(e){alert('Not a valid discards file')}};r.readAsText(f)});
+(function(){
+  var G=DATA.gaps||{blocked:[],untracked:[]},el=$('gaps');
+  if(!G.blocked.length&&!G.untracked.length)return;
+  var h='<summary><b>Coverage gaps:</b> '+G.blocked.length+' failing in the latest run, '+G.untracked.length+' not tracked yet</summary>';
+  if(G.blocked.length){h+='<ul>';G.blocked.forEach(function(x){h+='<li><b>'+esc(x.c)+'</b>: '+esc(x.why)+'. Its listings below are stale (last good crawl '+esc(x.last)+').</li>'});h+='</ul>'}
+  if(G.untracked.length)h+='<p style="margin:8px 0 0;color:var(--muted)"><b style="color:var(--text)">Not tracked (no usable job feed found):</b> '+G.untracked.map(esc).join(', ')+'</p>';
+  el.innerHTML=h;el.hidden=false})();
 sync();render();
 })();
 </script>
