@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 data/digest.html
 data/survey.json
+data/catchup.html
