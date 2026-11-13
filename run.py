@@ -2,7 +2,7 @@
 import json, sqlite3, time, sys
 from concurrent.futures import ThreadPoolExecutor
 from adapters import ADAPTERS
-from browser_crawl import crawl_many
+from browser_crawl import crawl_many, WHY
 
 DB = "data/jobs.db"
 
@@ -68,7 +68,7 @@ def main():
     print(f"crawled {len(companies)} companies, failed {len(failed)} {failed}, open jobs {n_open}")
     for co, jobs in results:
         if co["ats"] == "browser":
-            print(f"  browser {co['name']:15s} {'FAILED' if jobs is None else len(jobs)}")
+            print(f"  browser {co['name']:15s} {'FAILED' if jobs is None else len(jobs)}" + (f"  <- {WHY[co['slug']]}" if co["slug"] in WHY else ""))
 
 
 if __name__ == "__main__":

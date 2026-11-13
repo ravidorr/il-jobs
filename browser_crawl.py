@@ -14,6 +14,9 @@ EXE = os.environ.get("PW_CHROMIUM") or ("/opt/pw-browsers/chromium" if os.path.e
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
 
 
+WHY = {}  # url -> reason, filled for failed or empty crawls, printed by run.py
+
+
 def _job(job_id, title, location, url, team=""):
     return dict(job_id=job_id, title=title, location=location, url=url, team=team, posted="")
 
@@ -41,7 +44,12 @@ async def crawl_one(ctx, url, sem):
                 await page.wait_for_load_state("networkidle", timeout=15000)
             except Exception:
                 pass
-            if (r and r.status >= 400) or BLOCKED.search(await page.title()):
+            title = (await page.title())[:80]
+            if r and r.status >= 400:
+                WHY[url] = f"HTTP {r.status}, title={title!r}, final={page.url[:80]}"
+                return None
+            if BLOCKED.search(title):
+                WHY[url] = f"blocked page, title={title!r}, final={page.url[:80]}"
                 return None
             prev = -1
             await page.wait_for_timeout(1000)
@@ -127,8 +135,11 @@ async def crawl_one(ctx, url, sem):
                 await page.wait_for_timeout(1500)
                 if not await collect():
                     break
+            if not out:
+                WHY[url] = f"no jobs found, title={title!r}, final={page.url[:80]}, links={len(links)}"
             return out
-        except Exception:
+        except Exception as e:
+            WHY[url] = f"{type(e).__name__}: {str(e).splitlines()[0][:140] if str(e) else ''}"
             return None
         finally:
             await page.close()
