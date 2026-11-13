@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
+    # The daily pipeline commits only these paths with a deploy key (which triggers push workflows).
+    paths-ignore:
+      - data/**
+      - docs/**
 
 permissions:
   contents: read
