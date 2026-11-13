@@ -5,10 +5,11 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ravidorr/misra/pulls) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ravidorr/misra/graphs/commit-activity) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Node.js](https://img.shields.io/badge/Node.js-26-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 
 ```bash
-python3 discover.py        # seed_companies.csv -> companies.json (careers URL + ATS)
+python3 discover.py        # data/seed_companies.csv -> data/companies.json (careers URL + ATS)
 python3 run.py             # crawl, diff into data/jobs.db
 python3 digest.py          # preview digest (data/digest.html)
-python3 digest.py --commit # mark as reported (do this after the email is sent)
+python3 digest.py --commit # only after sending manually; send_email.py does this itself
+python3 send_email.py      # send the digest (add --dry-run to preview)
 ```
 
 Adapters: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Comeet (public hosted pages), and a generic
@@ -31,7 +32,7 @@ The daily workflow rebuilds and commits it. Serve it with GitHub Pages: Settings
 
 ## Development
 
-Python runs the pipeline; Node is dev tooling only (linters and git hooks).
+Requires Python 3.12+ and Node 26 (see `.nvmrc`). Python runs the pipeline; Node is dev tooling only (linters, git hooks, release gate).
 
 ```bash
 nvm install && nvm use
