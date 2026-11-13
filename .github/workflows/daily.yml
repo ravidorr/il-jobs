@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   run:
@@ -18,6 +18,25 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        id: checkout
+        with:
+          persist-credentials: false
+      - name: Verify the deploy key before crawling or emailing
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "refusing to run the daily push from $GITHUB_REF; run it from main" >&2
+            exit 1
+          fi
+          if [ -z "$DEPLOY_KEY" ]; then
+            echo "DEPLOY_KEY secret is missing: the final push to main would be rejected by the protect-main ruleset." >&2
+            exit 1
+          fi
+          . scripts/deploy-key.sh
+          ssh-keygen -y -f "$key" > /dev/null
+          git ls-remote "git@github.com:${GITHUB_REPOSITORY}.git" HEAD > /dev/null
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -32,13 +51,44 @@ jobs:
           DIGEST_TO: ${{ secrets.DIGEST_TO }}
         run: python send_email.py
       - name: Build dashboard
-        if: always()
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
         run: python build_dashboard.py
       - name: Commit database and dashboard
-        if: always()
+        id: commit
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] || { echo "refusing to push from $GITHUB_REF" >&2; exit 1; }
+          python3 -c "import sqlite3,sys; r=sqlite3.connect('data/jobs.db').execute('pragma integrity_check').fetchone()[0]; sys.exit(0 if r == 'ok' else 'integrity_check: ' + r)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/jobs.db docs/index.html
-          git diff --cached --quiet || git commit -m "daily crawl $(date -u +%F)"
-          git push
+          for f in data/jobs.db docs/index.html; do
+            if [ -f "$f" ]; then
+              git add "$f"
+            fi
+          done
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "daily crawl $(date -u +%F)"
+          # The key is written to disk only in this step, after the crawl, and removed on exit.
+          . scripts/deploy-key.sh
+          git remote set-url origin "git@github.com:${GITHUB_REPOSITORY}.git"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "push to main failed after 3 attempts; the database is kept as the jobs-db artifact" >&2
+          exit 1
+      - name: Keep the database if the push failed
+        if: ${{ failure() && steps.commit.outcome == 'failure' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jobs-db
+          path: data/jobs.db
+          retention-days: 7
