@@ -1,0 +1,33 @@
+{
+  "extends": [
+    "stylelint-config-standard"
+  ],
+  "ignoreFiles": [
+    ".venv/**",
+    "coverage/**",
+    "dist/**",
+    "node_modules/**",
+    ".lighthouseci/**"
+  ],
+  "rules": {
+    "color-no-invalid-hex": true,
+    "declaration-no-important": true,
+    "selector-max-id": 0,
+    "max-nesting-depth": 3,
+    "declaration-property-value-disallowed-list": {
+      "/^(color|background(-color)?|border(-color)?|fill|stroke)$/": [
+        "/^#[0-9a-fA-F]{3,8}$/"
+      ]
+    }
+  },
+  "overrides": [
+    {
+      "files": [
+        "design-system/tokens.css"
+      ],
+      "rules": {
+        "declaration-property-value-disallowed-list": null
+      }
+    }
+  ]
+}

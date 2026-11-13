@@ -1,0 +1,10 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": { "allowed_elements": ["details", "summary", "img", "br"] },
+    "MD041": true
+  },
+  "globs": ["**/*.md"],
+  "ignores": [".venv/**", "node_modules/**", "dist/**", "CHANGELOG.md", ".github/ISSUE_TEMPLATE/**", ".github/PULL_REQUEST_TEMPLATE.md"]
+}

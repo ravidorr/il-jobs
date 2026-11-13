@@ -1,0 +1,18 @@
+{
+  "*.py": [
+    ".venv/bin/python -m ruff check",
+    ".venv/bin/python -m ruff format --check"
+  ],
+  "*.{ts,tsx,js,mjs,cjs}": [
+    "eslint --max-warnings=0"
+  ],
+  "*.css": [
+    "stylelint --max-warnings=0"
+  ],
+  "*.html": [
+    "html-validate"
+  ],
+  "*.md": [
+    "markdownlint-cli2"
+  ]
+}

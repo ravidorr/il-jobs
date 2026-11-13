@@ -1,14 +1,19 @@
-import re, time, threading, requests
+import re
+import threading
+import time
+from typing import Any
+
+import requests
 
 UA = "IL-JobWatch/0.1 (personal job search; low-volume)"
 _s = requests.Session()
 _s.headers["User-Agent"] = UA
-_last = {}
+_last: dict[str, float] = {}
 _lock = threading.Lock()
 DELAY = 1.0  # seconds between requests to the same host
 
 
-def get(url, **kw):
+def get(url: str, **kw: Any) -> requests.Response | None:
     host = re.sub(r"^https?://([^/]+).*", r"\1", url)
     with _lock:
         wait = _last.get(host, 0) + DELAY - time.time()
@@ -22,11 +27,11 @@ def get(url, **kw):
         return None
 
 
-def slug_candidates(name, domain):
-    base = domain.split(".")[0].lower()
+def slug_candidates(name: str, domain: str) -> list[str]:
+    base = domain.split(".", 1)[0].lower()
     n = re.sub(r"[^a-z0-9]+", "", name.lower())
     nd = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    out = []
+    out: list[str] = []
     for s in (base, n, nd, base + "hq", base + "inc"):
         if s and s not in out:
             out.append(s)
