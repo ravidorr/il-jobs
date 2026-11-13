@@ -24,7 +24,7 @@ Daily batch pipeline that crawls career pages, keeps history in SQLite, and emai
 - Python lives at the repository root (flat modules). Node is dev tooling only (linters, hooks, release gate); pin it via `.nvmrc`, package manager is `npm`. Keep `package-lock.json` committed.
 - Keep the version in `package.json` and `pyproject.toml` equal. PRs that change `package.json`, `pyproject.toml`, or a listed Python module update `CHANGELOG.md` and bump both (one SemVer bump per PR). Docs-only, test-only, and workflow-only PRs do not.
 - When adding a Python module, add it to `RELEASE_TRIGGER_PATHS` in `.github/workflows/ci.yml` and `.husky/pre-push`, and to `py-modules` and mypy `files` in `pyproject.toml`; the release gate only watches that list.
-- The daily workflow commits `data/jobs.db` and `docs/index.html` straight to `main`. It checks out with the `DEPLOY_KEY` secret (a write deploy key), which is the bypass actor of the `main` ruleset; the Actions bot cannot be one on a personal repo. Do not change that flow without updating the ruleset.
+- The daily workflow commits `data/jobs.db` and `docs/index.html` straight to `main`. It pushes with the `DEPLOY_KEY` secret (a write deploy key), written to disk only in the final push step by `scripts/deploy-key.sh`, never during the crawl; do not add `ssh-key:` to the checkout step. That key is the only actor allowed to push directly to `main` under the `protect-main` ruleset (the Actions bot cannot be a bypass actor on a personal repo). Do not change that flow without updating the ruleset.
 - Track open work in `TODO.md`.
 
 ## Layout

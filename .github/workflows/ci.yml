@@ -4,7 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
-    # The daily pipeline commits only these paths with a deploy key (which triggers push workflows).
+    # The daily pipeline pushes only data/ and docs/ using a deploy key. Unlike GITHUB_TOKEN pushes, that
+    # triggers push workflows, so skip CI for those commits.
     paths-ignore:
       - data/**
       - docs/**
