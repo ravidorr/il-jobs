@@ -34,7 +34,10 @@ def israel_count(jobs):
     return sum(1 for j in jobs if ISRAEL.search(j["location"] or ""))
 
 
-OVERRIDES = json.load(open("data/overrides.json"))
+import glob
+OVERRIDES = {}
+for _p in ["data/overrides.json"] + sorted(glob.glob("data/new/*_overrides.json")):   # agents add data/new/<segment>_overrides.json
+    OVERRIDES.update(json.load(open(_p)))
 
 
 def discover(row):
@@ -93,13 +96,15 @@ def discover(row):
 
 
 if __name__ == "__main__":
-    rows = list(csv.DictReader(open("data/seed_companies.csv")))
+    src = sys.argv[1] if len(sys.argv) > 1 else "data/seed_companies.csv"
+    dst = sys.argv[2] if len(sys.argv) > 2 else "data/companies.json"
+    rows = list(csv.DictReader(open(src)))
     seen, uniq = set(), []
     for r in rows:
         if r["domain"] not in seen:
             seen.add(r["domain"]); uniq.append(r)
     with ThreadPoolExecutor(8) as ex:
         out = list(ex.map(discover, uniq))
-    json.dump(out, open("data/companies.json", "w"), indent=1, ensure_ascii=False)
+    json.dump(out, open(dst, "w"), indent=1, ensure_ascii=False)
     from collections import Counter
     print(Counter(r["status"] for r in out))
