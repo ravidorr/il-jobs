@@ -37,7 +37,7 @@ jobs:
           . scripts/deploy-key.sh
           ssh-keygen -y -f "$key" > /dev/null
           git ls-remote "git@github.com:${GITHUB_REPOSITORY}.git" HEAD > /dev/null
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install requests playwright==1.65.0
