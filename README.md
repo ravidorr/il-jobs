@@ -1,4 +1,4 @@
-# il-jobs (MVP)
+# Misra
 
     python3 discover.py        # seed_companies.csv -> companies.json (careers URL + ATS)
     python3 run.py             # crawl, diff into data/jobs.db
