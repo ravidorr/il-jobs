@@ -34,9 +34,24 @@ def israel_count(jobs):
     return sum(1 for j in jobs if ISRAEL.search(j["location"] or ""))
 
 
+OVERRIDES = json.load(open("data/overrides.json"))
+
+
 def discover(row):
     name, domain = row["name"], row["domain"]
     res = dict(name=name, domain=domain, careers_url="", ats="", slug="", source="", status="unknown", n_jobs=None, n_israel=None)
+    ov = OVERRIDES.get(name)
+    if ov:
+        res.update(ats=ov["ats"], slug=ov["slug"], source="override", careers_url=ov["slug"] if ov["ats"] == "browser" else "")
+        if ov["ats"] == "browser":
+            res["status"] = "ok"          # verified at crawl time
+            print(f"{name:25s} ok(browser)        {ov['slug']}", flush=True)
+            return res
+        jobs = ADAPTERS[ov["ats"]](ov["slug"])
+        res.update(status="ok" if jobs is not None else "ats_failed", n_jobs=None if jobs is None else len(jobs),
+                   n_israel=None if jobs is None else israel_count(jobs))
+        print(f"{name:25s} {res['status']:18s} {ov['ats']:15s} {ov['slug']:30s} {res['n_jobs']} il={res['n_israel']} src=override", flush=True)
+        return res
     # 1. look at the real career pages first (most reliable, finds comeet)
     for p in ["/"] + CAREER_PATHS:
         for host in (f"https://www.{domain}", f"https://{domain}"):

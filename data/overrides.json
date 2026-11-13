@@ -1,0 +1,98 @@
+{
+ "Lightricks": {
+  "ats": "greenhouse",
+  "slug": "lightricks"
+ },
+ "Playtika": {
+  "ats": "greenhouse",
+  "slug": "playtikaltd"
+ },
+ "Gong": {
+  "ats": "greenhouse",
+  "slug": "gongio"
+ },
+ "Placer.ai": {
+  "ats": "greenhouse",
+  "slug": "placerlabs"
+ },
+ "Fireblocks": {
+  "ats": "greenhouse",
+  "slug": "fireblocks"
+ },
+ "Zoominfo": {
+  "ats": "greenhouse",
+  "slug": "zoominfo"
+ },
+ "Ultima Genomics": {
+  "ats": "greenhouse",
+  "slug": "ultimagenomics"
+ },
+ "Melio": {
+  "ats": "ashby",
+  "slug": "melio-payments"
+ },
+ "Lemonade": {
+  "ats": "ashby",
+  "slug": "Lemonade"
+ },
+ "Atera": {
+  "ats": "smartrecruiters",
+  "slug": "atera"
+ },
+ "Checkmarx": {
+  "ats": "comeet",
+  "slug": "checkmarx/C0.008"
+ },
+ "AI21 Labs": {
+  "ats": "comeet",
+  "slug": "ai21/E6.001"
+ },
+ "Global-e": {
+  "ats": "comeet",
+  "slug": "global-e/62.002"
+ },
+ "Tufin": {
+  "ats": "comeet",
+  "slug": "tufin/A1.00B"
+ },
+ "Port": {
+  "ats": "comeet",
+  "slug": "port/59.004"
+ },
+ "Claroty": {
+  "ats": "comeet",
+  "slug": "Claroty/F2.004"
+ },
+ "Justt": {
+  "ats": "comeet",
+  "slug": "justt/36.001"
+ },
+ "monday.com": {
+  "ats": "browser",
+  "slug": "https://monday.com/careers"
+ },
+ "Papaya Global": {
+  "ats": "browser",
+  "slug": "https://www.papayaglobal.com/careers/"
+ },
+ "Perion": {
+  "ats": "browser",
+  "slug": "https://perion.com/careers/"
+ },
+ "Hibob": {
+  "ats": "browser",
+  "slug": "https://www.hibob.com/careers/"
+ },
+ "Unity": {
+  "ats": "browser",
+  "slug": "https://unity.com/careers/positions"
+ },
+ "Nayax": {
+  "ats": "browser",
+  "slug": "https://www.nayax.com/careers/"
+ },
+ "Sapiens": {
+  "ats": "browser",
+  "slug": "https://sapiens.careers.hibob.com/"
+ }
+}
