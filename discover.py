@@ -47,6 +47,10 @@ def discover(row):
             res["status"] = "ok"          # verified at crawl time
             print(f"{name:25s} ok(browser)        {ov['slug']}", flush=True)
             return res
+        if ov.get("verify") is False:
+            res["status"] = "ok"          # trusted: verified at crawl time (this network cannot reach it)
+            print(f"{name:25s} ok(unverified)      {ov['ats']} {ov['slug']}", flush=True)
+            return res
         jobs = ADAPTERS[ov["ats"]](ov["slug"])
         res.update(status="ok" if jobs is not None else "ats_failed", n_jobs=None if jobs is None else len(jobs),
                    n_israel=None if jobs is None else israel_count(jobs))

@@ -79,8 +79,9 @@ async def crawl_one(ctx, url, sem):
             # 2. job-looking links, across paginated result pages
             async def collect():
                 found = 0
-                links = await page.eval_on_selector_all("a[href]", "els=>els.map(e=>[e.href,(e.innerText||'').trim()])")
-                for href, text in links:
+                links = await page.eval_on_selector_all("a[href]", """els=>els.map(e=>{let n=e; for(let i=0;i<2&&n.parentElement;i++) n=n.parentElement;
+                    return [e.href,(e.innerText||'').trim(),(n.innerText||'').trim().slice(0,300)]})""")
+                for href, text, ctx in links:
                     key = href.split("?")[0].rstrip("/")
                     if not text or key in seen or not JOBLINK.search(href) or NOT_JOB.search(href):
                         continue
@@ -90,6 +91,9 @@ async def crawl_one(ctx, url, sem):
                     title = lines[0][:140]
                     if title.lower() in LANGS:
                         continue
+                    if len(lines) == 1 and 0 < len(ctx) < 250:  # bare title link: location sits in the surrounding card
+                        cl = [l.strip() for l in ctx.split("\n") if l.strip() and l.strip().lower() not in ("save job", "share job", "apply", "apply now", title.lower())]
+                        lines = [title] + cl[:2]
                     if len(title) < 4 or title.lower() in ("apply now", "apply", "view job", "read more", "see open positions", "see careers", "skip to main content"):
                         if len(lines) > 1:
                             title = lines[1][:140]

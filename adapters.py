@@ -18,7 +18,10 @@ def greenhouse(slug):
 
 
 def lever(slug):
-    r = get(f"https://api.lever.co/v0/postings/{slug}?mode=json")
+    host = "api.lever.co"
+    if slug.startswith("eu:"):
+        host, slug = "api.eu.lever.co", slug[3:]
+    r = get(f"https://{host}/v0/postings/{slug}?mode=json")
     if r is None or r.status_code != 200:
         return None
     out = []
@@ -87,5 +90,18 @@ def comeet(slug):
     return out
 
 
-ADAPTERS = dict(greenhouse=greenhouse, lever=lever, ashby=ashby, workable=workable,
+def greenhouse_url(url):
+    """Company site proxies a Greenhouse board as JSON ({"jobs": [...]}, Greenhouse field names)."""
+    r = get(url)
+    if r is None or r.status_code != 200:
+        return None
+    try:
+        jobs = r.json().get("jobs", [])
+    except ValueError:
+        return None
+    return [_job(j["id"], j["title"], (j.get("location") or {}).get("name"), j["absolute_url"],
+                 posted=j.get("updated_at", "")) for j in jobs]
+
+
+ADAPTERS = dict(greenhouse_url=greenhouse_url, greenhouse=greenhouse, lever=lever, ashby=ashby, workable=workable,
                 smartrecruiters=smartrecruiters, comeet=comeet)

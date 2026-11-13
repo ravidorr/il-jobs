@@ -94,5 +94,47 @@
  "Sapiens": {
   "ats": "browser",
   "slug": "https://sapiens.careers.hibob.com/jobs"
+ },
+ "Outbrain": {
+  "ats": "greenhouse",
+  "slug": "teads1"
+ },
+ "Mobileye": {
+  "ats": "lever",
+  "slug": "eu:mobileye"
+ },
+ "Next Insurance": {
+  "ats": "greenhouse_url",
+  "slug": "https://www.nextinsurance.com/nextjs-api/careers/"
+ },
+ "Tipalti": {
+  "ats": "greenhouse",
+  "slug": "tipaltisolutions"
+ },
+ "Aqua Security": {
+  "ats": "comeet",
+  "slug": "aquasec/91.001"
+ },
+ "Elementor": {
+  "ats": "comeet",
+  "slug": "elementor/A3.00F"
+ },
+ "Nanox": {
+  "ats": "comeet",
+  "slug": "nanox/43.00F"
+ },
+ "Check Point": {
+  "ats": "browser",
+  "slug": "https://careers.checkpoint.com/jobs"
+ },
+ "Nuvei": {
+  "ats": "workable",
+  "slug": "nuvei",
+  "verify": false
+ },
+ "Vayyar": {
+  "ats": "workable",
+  "slug": "vayyar",
+  "verify": false
  }
 }

@@ -90,11 +90,11 @@
  {
   "name": "Check Point",
   "domain": "checkpoint.com",
-  "careers_url": "https://www.checkpoint.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
+  "careers_url": "https://careers.checkpoint.com/jobs",
+  "ats": "browser",
+  "slug": "https://careers.checkpoint.com/jobs",
+  "source": "override",
+  "status": "ok",
   "n_jobs": null,
   "n_israel": null
  },
@@ -134,13 +134,13 @@
  {
   "name": "Outbrain",
   "domain": "outbrain.com",
-  "careers_url": "https://www.teads.com/teads-careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "greenhouse",
+  "slug": "teads1",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 45,
+  "n_israel": 2
  },
  {
   "name": "Playtika",
@@ -183,17 +183,6 @@
   "slug": "",
   "source": "",
   "status": "not_found",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
-  "name": "CyberArk",
-  "domain": "cyberark.com",
-  "careers_url": "https://www.paloaltonetworks.com/idira",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
   "n_jobs": null,
   "n_israel": null
  },
@@ -288,13 +277,13 @@
  {
   "name": "Aqua Security",
   "domain": "aquasec.com",
-  "careers_url": "https://www.aquasec.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "aquasec/91.001",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 7,
+  "n_israel": 4
  },
  {
   "name": "Checkmarx",
@@ -365,13 +354,13 @@
  {
   "name": "Tipalti",
   "domain": "tipalti.com",
-  "careers_url": "https://tipalti.com/company/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "greenhouse",
+  "slug": "tipaltisolutions",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 14,
+  "n_israel": 7
  },
  {
   "name": "Nayax",
@@ -519,11 +508,11 @@
  {
   "name": "Nuvei",
   "domain": "nuvei.com",
-  "careers_url": "https://www.nuvei.com/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
+  "careers_url": "",
+  "ats": "workable",
+  "slug": "nuvei",
+  "source": "override",
+  "status": "ok",
   "n_jobs": null,
   "n_israel": null
  },
@@ -585,13 +574,13 @@
  {
   "name": "Elementor",
   "domain": "elementor.com",
-  "careers_url": "https://elementor.careers/explore/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "elementor/A3.00F",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 1,
+  "n_israel": 1
  },
  {
   "name": "Jeeves",
@@ -629,24 +618,24 @@
  {
   "name": "Nanox",
   "domain": "nanox.vision",
-  "careers_url": "https://www.nanox.vision/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "nanox/43.00F",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 3,
+  "n_israel": 3
  },
  {
   "name": "Mobileye",
   "domain": "mobileye.com",
-  "careers_url": "https://careers.mobileye.com/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "lever",
+  "slug": "eu:mobileye",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 176,
+  "n_israel": 151
  },
  {
   "name": "Innoviz",
@@ -744,7 +733,7 @@
   "slug": "27cfd344-670f-4dcd-8b13-0e18005b0d65",
   "source": "page",
   "status": "ok",
-  "n_jobs": 16,
+  "n_jobs": 17,
   "n_israel": 0
  },
  {
@@ -871,13 +860,13 @@
  {
   "name": "Next Insurance",
   "domain": "nextinsurance.com",
-  "careers_url": "https://www.nextinsurance.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "greenhouse_url",
+  "slug": "https://www.nextinsurance.com/nextjs-api/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 31,
+  "n_israel": 8
  },
  {
   "name": "Justt",
@@ -949,10 +938,10 @@
   "name": "Vayyar",
   "domain": "vayyar.com",
   "careers_url": "",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "not_found",
+  "ats": "workable",
+  "slug": "vayyar",
+  "source": "override",
+  "status": "ok",
   "n_jobs": null,
   "n_israel": null
  },
