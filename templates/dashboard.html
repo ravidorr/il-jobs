@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Israel Jobs Board</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--text:#16181d;--muted:#667085;--line:#e3e6eb;--accent:#2f5bea;--accent-bg:#e8eefe;--new:#0f9d58;--new-bg:#e4f6ec;--warn:#b45309;--danger:#c0392b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--panel:#171a21;--text:#e7e9ee;--muted:#8b93a3;--line:#262b35;--accent:#7d9bff;--accent-bg:#1d2540;--new:#4cc38a;--new-bg:#14301f;--warn:#e0a458;--danger:#ff7b6b}}
+:root[data-theme="dark"]{--bg:#0f1115;--panel:#171a21;--text:#e7e9ee;--muted:#8b93a3;--line:#262b35;--accent:#7d9bff;--accent-bg:#1d2540;--new:#4cc38a;--new-bg:#14301f;--warn:#e0a458;--danger:#ff7b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;margin-bottom:12px}
+h1{font-size:20px;margin:0}
+.stats{color:var(--muted);font-size:13px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;border-bottom:1px solid var(--line)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search],select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-height:38px}
+input[type=search]{flex:1 1 220px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer;min-height:34px}
+.chip[aria-pressed=true]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+label.tg{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;min-height:34px}
+button.link{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;padding:4px 6px}
+ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+li.job{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+li.job.gone{opacity:.5}
+.co{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.title a{color:var(--text);font-weight:600;text-decoration:none}
+.title a:hover{color:var(--accent);text-decoration:underline}
+.meta{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.badge{font-size:11px;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.b-new{background:var(--new-bg);color:var(--new)}
+.b-pm{background:var(--accent-bg);color:var(--accent)}
+.act{grid-column:2;grid-row:1 / span 3;align-self:center}
+button.discard{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit;min-height:38px}
+button.discard:hover{border-color:var(--danger);color:var(--danger)}
+li.gone button.discard:hover{border-color:var(--accent);color:var(--accent)}
+.empty{color:var(--muted);text-align:center;padding:40px 0}
+.more{display:block;margin:14px auto;padding:10px 18px}
+.foot{color:var(--muted);font-size:12px;margin:20px 0 8px}
+@media (max-width:560px){.bar{position:static}li.job{grid-template-columns:1fr}.act{grid-column:1;grid-row:auto}button.discard{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Israel Jobs Board</h1>
+  <span class="stats" id="stats"></span>
+</header>
+<div class="bar">
+  <div class="row">
+    <input type="search" id="q" placeholder="Search title, company, team, location" aria-label="Search">
+    <select id="company" aria-label="Company"><option value="">All companies</option></select>
+    <select id="loc" aria-label="Location"><option value="il">Israel only</option><option value="all">All locations</option></select>
+    <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="co">Company A-Z</option><option value="title">Title A-Z</option></select>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="chip" data-cat="pm" aria-pressed="false">Product</button>
+    <button class="chip" data-cat="junior" aria-pressed="false">Student / junior / intern</button>
+    <button class="chip" data-cat="other" aria-pressed="false">Other</button>
+    <label class="tg"><input type="checkbox" id="onlyNew"> New only</label>
+    <label class="tg"><input type="checkbox" id="showGone"> Show discarded (<span id="goneN">0</span>)</label>
+    <button class="link" id="reset">Reset filters</button>
+    <span style="flex:1"></span>
+    <button class="link" id="exp">Export discards</button>
+    <button class="link" id="imp">Import</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>
+</div>
+<ul id="list"></ul>
+<button class="chip more" id="more" hidden>Show more</button>
+<p class="foot">Discards are saved in this browser only. Use Export and Import to move them to another device. Data updated <span id="upd"></span>.</p>
+</div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function(){
+var DATA=JSON.parse(document.getElementById('data').textContent);
+var JOBS=DATA.jobs,PAGE=100,shown=PAGE;
+var $=function(id){return document.getElementById(id)};
+var LS_D='il-jobs-discarded-v1',LS_F='il-jobs-filters-v1';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var gone=lsGet(LS_D,{});
+var F=Object.assign({q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false},lsGet(LS_F,{}));
+function key(j){return j.c+'|'+j.i}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+var companies=Array.from(new Set(JOBS.map(function(j){return j.c}))).sort(function(a,b){return a.localeCompare(b)});
+companies.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;$('company').appendChild(o)});
+$('upd').textContent=DATA.generated;
+function sync(){
+  $('q').value=F.q;$('company').value=F.company;$('loc').value=F.loc;$('sort').value=F.sort;
+  $('onlyNew').checked=F.onlyNew;$('showGone').checked=F.showGone;
+  document.querySelectorAll('.chip[data-cat]').forEach(function(b){b.setAttribute('aria-pressed',F.cats.indexOf(b.dataset.cat)>=0)});
+}
+function filtered(){
+  var q=F.q.trim().toLowerCase(),terms=q?q.split(/\s+/):[];
+  var out=JOBS.filter(function(j){
+    var g=!!gone[key(j)];
+    if(g&&!F.showGone)return false;
+    if(F.loc==='il'&&!j.il)return false;
+    if(F.company&&j.c!==F.company)return false;
+    if(F.cats.length&&F.cats.indexOf(j.k)<0)return false;
+    if(F.onlyNew&&!j.n)return false;
+    if(terms.length){var hay=(j.c+' '+j.t+' '+j.m+' '+j.l).toLowerCase();for(var x=0;x<terms.length;x++)if(hay.indexOf(terms[x])<0)return false}
+    return true});
+  out.sort(function(a,b){
+    if(F.sort==='co')return a.c.localeCompare(b.c)||a.t.localeCompare(b.t);
+    if(F.sort==='title')return a.t.localeCompare(b.t);
+    return (b.f>a.f?1:b.f<a.f?-1:0)||a.c.localeCompare(b.c)});
+  return out}
+function render(){
+  var res=filtered();
+  var goneN=Object.keys(gone).filter(function(k){return JOBS.some(function(j){return key(j)===k})}).length;
+  $('goneN').textContent=goneN;
+  $('stats').textContent=res.length+' shown, '+JOBS.length+' open, '+goneN+' discarded';
+  var ul=$('list');ul.innerHTML='';
+  if(!res.length){ul.innerHTML='<li class="empty">No positions match these filters.</li>';$('more').hidden=true;return}
+  var frag=document.createDocumentFragment();
+  res.slice(0,shown).forEach(function(j){
+    var g=!!gone[key(j)],li=document.createElement('li');
+    li.className='job'+(g?' gone':'');
+    var meta=[j.l?'<span>'+esc(j.l)+'</span>':'',j.m?'<span>'+esc(j.m)+'</span>':'','<span>first seen '+esc(j.f)+'</span>'].join('');
+    li.innerHTML='<div><div class="co">'+esc(j.c)+'</div><div class="title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a>'+(j.n?'<span class="badge b-new">NEW</span>':'')+(j.k==='pm'?'<span class="badge b-pm">PM</span>':'')+'</div><div class="meta">'+meta+'</div></div><div class="act"><button class="discard" data-k="'+esc(key(j))+'">'+(g?'Restore':'Discard')+'</button></div>';
+    frag.appendChild(li)});
+  ul.appendChild(frag);
+  $('more').hidden=res.length<=shown;
+  if(!$('more').hidden)$('more').textContent='Show more ('+(res.length-shown)+' left)'}
+function save(){lsSet(LS_F,F)}
+function upd(){shown=PAGE;save();render()}
+$('q').addEventListener('input',function(){F.q=this.value;upd()});
+$('company').addEventListener('change',function(){F.company=this.value;upd()});
+$('loc').addEventListener('change',function(){F.loc=this.value;upd()});
+$('sort').addEventListener('change',function(){F.sort=this.value;upd()});
+$('onlyNew').addEventListener('change',function(){F.onlyNew=this.checked;upd()});
+$('showGone').addEventListener('change',function(){F.showGone=this.checked;upd()});
+document.querySelectorAll('.chip[data-cat]').forEach(function(b){b.addEventListener('click',function(){var c=b.dataset.cat,i=F.cats.indexOf(c);if(i>=0)F.cats.splice(i,1);else F.cats.push(c);sync();upd()})});
+$('reset').addEventListener('click',function(){F={q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false};sync();upd()});
+$('more').addEventListener('click',function(){shown+=PAGE;render()});
+$('list').addEventListener('click',function(e){var b=e.target.closest('button.discard');if(!b)return;var k=b.dataset.k;if(gone[k])delete gone[k];else gone[k]=new Date().toISOString().slice(0,10);lsSet(LS_D,gone);render()});
+$('exp').addEventListener('click',function(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(gone,null,1)],{type:'application/json'}));a.download='discarded-jobs.json';a.click()});
+$('imp').addEventListener('click',function(){$('file').click()});
+$('file').addEventListener('change',function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d&&typeof d==='object'){Object.assign(gone,d);lsSet(LS_D,gone);render()}}catch(e){alert('Not a valid discards file')}};r.readAsText(f)});
+sync();render();
+})();
+</script>
+</body>
+</html>

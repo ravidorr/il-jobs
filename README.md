@@ -16,3 +16,7 @@ Not covered yet: see status=careers_page_only / not_found in data/companies.json
 `.github/workflows/daily.yml` runs at 04:30 UTC: crawl, email new jobs, commit `data/jobs.db`.
 Repo secrets: `GMAIL_USER`, `GMAIL_APP_PASSWORD` (Gmail app password), `DIGEST_TO` (optional recipient).
 Manual run: Actions tab, "daily-job-digest", Run workflow.
+
+## Dashboard
+`python3 build_dashboard.py` writes `docs/index.html` (all open jobs, filters, per-job Discard saved in the browser).
+The daily workflow rebuilds and commits it. Serve it with GitHub Pages: Settings, Pages, Deploy from a branch, `main`, `/docs`.
