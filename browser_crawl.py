@@ -29,6 +29,7 @@ NEXT_SELS = [
     'button:text-is("Next")',
     'a:text-is("Next >")',
 ]
+SETTLE_POLLS = 32  # at 250 ms: wait up to 8 s for a pagination click to show new job links
 MORE = re.compile(r"load more|show more|see more|view more|more jobs|more positions", re.I)
 LANGS = {
     "english",
@@ -224,8 +225,13 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                     await nxt.click(timeout=3000)
                 except Exception:
                     break
-                await page.wait_for_timeout(1500)
-                if not await collect():
+                found = 0
+                for _poll in range(SETTLE_POLLS):  # wait for new job links; a pager may clear the list first
+                    await page.wait_for_timeout(250)
+                    found = await collect()
+                    if found:
+                        break
+                if not found:
                     break
             if not out:
                 WHY[url] = f"no jobs found, title={title!r}, final={page.url[:80]}, links={link_count}"

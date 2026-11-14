@@ -198,6 +198,38 @@ async def test_pagination_runs_to_the_cap() -> None:
     assert el.clicks == cap - 1
 
 
+async def test_pagination_waits_while_the_pager_clears_the_list() -> None:
+    """A pager may empty the list while it fetches the next page; an empty list is not a finished crawl."""
+    el = FakeEl()
+    page_two_at = 4  # collect calls: 1 = page one, 2 and 3 = list cleared mid-load, 4 = page two appears
+
+    def links(i: int) -> list[list[str]]:
+        if i == 1:
+            return [link("/jobs/job-one", "Job One")]
+        if i == page_two_at:
+            return [link("/jobs/job-two", "Job Two")]
+        return []
+
+    page = FakePage(link_fn=links, locators={'body a[rel="next"]': FakeLoc(1, el)})
+    jobs = await run(page)
+    assert jobs is not None
+    assert [j["title"] for j in jobs] == ["Job One", "Job Two"]
+    assert el.clicks == TWO
+
+
+async def test_pagination_gives_up_waiting_for_new_links() -> None:
+    el = FakeEl()
+    page = FakePage(
+        link_fn=lambda i: [link("/jobs/job-one", "Job One")] if i == 1 else [],
+        locators={'body a[rel="next"]': FakeLoc(1, el)},
+    )
+    jobs = await run(page)
+    assert jobs is not None
+    assert len(jobs) == 1
+    assert el.clicks == 1
+    assert page._links_calls == 1 + browser_crawl.SETTLE_POLLS  # first collect, then one per poll until it gives up
+
+
 @pytest.mark.parametrize("exe", ["/bin/chromium", None])
 def test_crawl_many(monkeypatch: pytest.MonkeyPatch, exe: str | None) -> None:
     calls: list[dict[str, Any]] = []
