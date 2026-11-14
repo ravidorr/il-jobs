@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.9] - 2026-11-14
+
+### Added
+
+- The digest email now ends with the companies that were not crawled properly: those whose last two crawls failed (blocked pages, HTTP errors), whose crawl was held as a sharp drop, or whose jobs were closed after an empty crawl was believed. Each says why and when the last good crawl was.
+- On a day with no new jobs, an email still goes out ("Job crawl alert") when something is new: a believed close, a company's first held crawl, or a company that just started failing. A gap that is not new waits for the next digest, so a company that stays blocked does not send mail every day.
+
 ## [0.2.8] - 2026-11-14
 
 ### Fixed

@@ -8,17 +8,18 @@ import sqlite3
 import sys
 from email.message import EmailMessage
 
-from digest import DB, render, select
+from digest import DB, coverage_gaps, render, select
 
 
 def main() -> None:
     dry = "--dry-run" in sys.argv
     c = sqlite3.connect(DB)
     jobs = select(c)
-    if not jobs:
-        print("no new matching jobs, nothing sent")
+    gaps = coverage_gaps(c)
+    if not jobs and not any(g["new"] for g in gaps):  # a gap that is not new is already in an earlier email
+        print("no new matching jobs or new coverage gaps, nothing sent")
         return
-    subject, body = render(jobs)
+    subject, body = render(jobs, gaps)
     if dry:
         print(f"[dry-run] would send: {subject}")
         return

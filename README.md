@@ -26,6 +26,7 @@ Not covered yet: see status=careers_page_only / not_found in data/companies.json
 
 `.github/workflows/daily.yml` runs at 04:30 UTC: crawl, email new jobs, commit `data/jobs.db` and `docs/index.html` straight to `main`.
 Repo secrets: `GMAIL_USER`, `GMAIL_APP_PASSWORD` (Gmail app password), `DIGEST_TO` (optional recipient), `DEPLOY_KEY` (private half of a write deploy key; it must be the deploy-key bypass actor of the `protect-main` ruleset, see AGENTS.md).
+The digest ends with the companies that were not crawled properly (failing, held after a sharp drop, or closed after an empty crawl). On a day with no new jobs it is only sent when one of those is new.
 Manual run: Actions tab, "daily-job-digest", Run workflow.
 
 ## Dashboard
