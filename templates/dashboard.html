@@ -232,7 +232,7 @@ function reply(obj,isError){return {content:[{type:'text',text:JSON.stringify(ob
 function find(id){return JOBS.filter(function(j){return key(j)===id})[0]}
 function search(a){
   var f=defaults();
-  f.q=a.query||'';f.company=a.company||'';f.onlyNew=!!a.onlyNew;f.showGone=!!a.includeDiscarded;
+  f.q=a.query||'';f.company=a.company||'';f.onlyNew=!!a.newOnly;f.showGone=!!a.includeDiscarded;
   f.loc=a.allLocations?'all':'il';
   f.sort={newest:'new',company:'co',title:'title'}[a.sort]||'new';
   if(a.category){f.cats=Object.keys(CATS).filter(function(k){return CATS[k]===a.category})}
