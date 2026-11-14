@@ -549,5 +549,41 @@
   "ats": "browser",
   "slug": "https://careers.appliedmaterials.com/careers?location=Israel",
   "israel_only": true
+ },
+ "Silverfort": {
+  "ats": "comeet",
+  "slug": "silverfort/54.007"
+ },
+ "Overwolf": {
+  "ats": "comeet",
+  "slug": "overwolf/B1.001"
+ },
+ "Oligo Security": {
+  "ats": "browser",
+  "slug": "https://www.oligo.security/company/careers"
+ },
+ "Freightos": {
+  "ats": "browser",
+  "slug": "https://www.freightos.com/careers/"
+ },
+ "Weka": {
+  "ats": "browser",
+  "slug": "https://www.weka.io/careers"
+ },
+ "Pecan AI": {
+  "ats": "browser",
+  "slug": "https://www.pecan.ai/careers/"
+ },
+ "Lasso Security": {
+  "ats": "browser",
+  "slug": "https://www.lasso.security/careers"
+ },
+ "Panorays": {
+  "ats": "browser",
+  "slug": "https://panorays.com/careers/"
+ },
+ "Komodor": {
+  "ats": "browser",
+  "slug": "https://komodor.com/careers/"
  }
 }

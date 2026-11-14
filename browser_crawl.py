@@ -63,9 +63,99 @@ UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 HTTP_OK = 200
 HTTP_ERROR = 400
 CARD_MAX = 250
-MIN_TITLE = 4
 
 WHY: dict[str, str] = {}  # url -> reason, filled for failed or empty crawls, printed by run.py
+
+
+ROLE_WORD = re.compile(
+    r"\b(engineer|developer|manager|analyst|specialist|director|lead|designer|architect|researcher|scientist"
+    r"|administrator|executive|representative|associate|intern|internship|student|officer|technician|consultant"
+    r"|account|head|vp|president|coordinator|recruiter|writer|marketer|operator|assistant|trainee|graduate"
+    r"|programmer|tester|devops|sre|cto|ciso|cfo|coo)\b",
+    re.I,
+)
+CARD_NOISE = {
+    "full-time",
+    "full time",
+    "part-time",
+    "part time",
+    "contract",
+    "temporary",
+    "permanent",
+    "view role",
+    "view job",
+    "view position",
+    "read more",
+    "learn more",
+    "see more",
+    "apply",
+    "apply now",
+    "see open positions",
+    "see careers",
+    "skip to main content",
+    "save job",
+    "share job",
+    "location",
+    "location:",
+    "department",
+}
+_COUNTRIES = (
+    "israel|united states|usa|united kingdom|uk|germany|india|canada|france|spain|poland|romania|brazil|singapore"
+    "|japan|australia|netherlands|ireland|italy|mexico|argentina|colombia|south africa|south korea|korea|china"
+    "|hong kong|ukraine|serbia|bulgaria|portugal|sweden|denmark|norway|finland|switzerland|austria|belgium"
+    "|czech republic|turkey|uae|united arab emirates|philippines|vietnam|thailand|malaysia|indonesia|new zealand"
+    "|chile|peru|costa rica|greece|hungary|lithuania|estonia|croatia|egypt|taiwan"
+)
+_CODES = (
+    "IL|US|UK|GB|DE|IN|CA|FR|ES|PL|RO|BR|SG|JP|AU|NL|IE|IT|MX|AR|CO|ZA|KR|CN|HK|UA|RS|BG|PT|SE|DK|NO|FI|CH|AT|BE|CZ"
+    "|TR|AE|PH|VN|TH|MY|ID|NZ|CL|PE|CR|GR|HU|LT|EE|HR|ISR|DEU|IRL|ITA|FRA|USA|GBR|IND|CAN"
+    "|AL|AK|AZ|AR|CO|CT|DC|DE|FL|GA|HI|IA|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI"
+    "|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY"
+)
+_BARE_CODE = re.compile(rf"(?:{_CODES})")
+_ENDS_IN_PLACE = re.compile(rf",\s*(?:(?:{_CODES})|(?:{_COUNTRIES}))\s*$")
+_ENDS_IN_COUNTRY = re.compile(rf",\s*(?:{_COUNTRIES})\s*$", re.I)
+_REMOTE = re.compile(r"\b(remote|hybrid|on-?site|worldwide|anywhere)\b", re.I)
+_COUNTRY_ONLY = re.compile(rf"(?:{_COUNTRIES})", re.I)
+MAX_LOCATION_LEN = 60
+MAX_TEAM_WORDS = 2
+MAX_REMOTE_WORDS = 4
+
+
+def _is_location(line: str) -> bool:
+    """A card line that names a place: "TEL AVIV, ISRAEL", "Dallas, US", "REMOTE (US)", "IL". A line with a job-role
+    word is a title even when it mentions a town ("Customer Engineer - Kiryat Gat")."""
+    if len(line) > MAX_LOCATION_LEN or ROLE_WORD.search(line):
+        return False
+    text = line.strip()
+    return bool(
+        ISRAEL.search(text)
+        or _BARE_CODE.fullmatch(text)
+        or _COUNTRY_ONLY.fullmatch(text)
+        or _ENDS_IN_PLACE.search(text)
+        or _ENDS_IN_COUNTRY.search(text)
+        or (_REMOTE.search(text) and len(text.split()) <= MAX_REMOTE_WORDS)
+    )
+
+
+def _parse_card(lines: list[str]) -> tuple[str, str, str] | None:
+    """Title, location and team from the text lines of a job card, in whatever order the site prints them
+    ([location, title, type], [team, title, location], [title, location]). None when there is no title."""
+    # split "title<tabs>location" and "Cyprus · Full-time" into their parts, and collapse padding
+    parts = [p for ln in lines for p in re.split(r"\t{2,}|\s+·\s+", ln)]
+    lines = [" ".join(p.split()) for p in parts]
+    lines = [ln for ln in lines if ln and ln.lower() not in CARD_NOISE]
+    places = [ln for ln in lines if _is_location(ln)]
+    rest = [ln for ln in lines if ln not in places]
+    if not rest:
+        return None
+    title, others = rest[0], rest[1:]
+    # a short leading line with no role word is a team name when the next line has one ("Analytics" / "... Engineer")
+    if others and len(title.split()) <= MAX_TEAM_WORDS and not ROLE_WORD.search(title) and ROLE_WORD.search(others[0]):
+        title, others = others[0], [title, *others[1:]]
+    if places:
+        return title[:140], " | ".join(places)[:100], others[0] if others else ""
+    return title[:140], " | ".join(others[:2])[:100], ""
 
 
 def _job(job_id: Any, title: Any, location: Any, url: Any, team: Any = "") -> dict[str, Any]:
@@ -233,8 +323,7 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                     ]
                     if not lines:
                         continue
-                    title = lines[0][:140]
-                    if title.lower() in LANGS:
+                    if lines[0].lower() in LANGS:
                         continue
                     if (
                         len(lines) == 1 and 0 < len(card) < CARD_MAX
@@ -243,29 +332,20 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                             ln.strip()
                             for ln in card.split("\n")
                             if ln.strip()
-                            and ln.strip().lower() not in ("save job", "share job", "apply", "apply now", title.lower())
+                            and ln.strip().lower()
+                            not in ("save job", "share job", "apply", "apply now", lines[0].lower())
                         ]
-                        lines = [title, *cl[:2]]
-                    if len(title) < MIN_TITLE or title.lower() in (
-                        "apply now",
-                        "apply",
-                        "view job",
-                        "read more",
-                        "see open positions",
-                        "see careers",
-                        "skip to main content",
-                    ):
-                        if len(lines) > 1:
-                            title = lines[1][:140]
-                        else:
-                            continue
+                        lines = [lines[0], *cl[:2]]
+                    parsed = _parse_card(lines)
+                    if parsed is None:
+                        continue
+                    title, loc, team = parsed
                     seen.add(key)
                     found += 1
-                    loc = " | ".join(lines[1:3])[:100]
                     m = re.search(r"myworkdayjobs\.com/(?:[a-z]{2}-[A-Z]{2}/)?[^/]+/job/([^/]+)/", href)
                     if m:  # Workday puts the location in the URL path
                         loc = m.group(1).replace("-", " ")
-                    out.append(_job(key, title, loc, href))
+                    out.append(_job(key, title, loc, href, team=team))
                 return found
 
             await collect()

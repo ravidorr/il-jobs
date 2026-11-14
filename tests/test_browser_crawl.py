@@ -138,17 +138,18 @@ async def test_collect_link_filters_and_titles() -> None:
     page = FakePage(link_fn=lambda i: links if i == 1 else [], ld=ld({"@type": "JobPosting", "url": "u0"}))
     jobs = await run(page)
     assert jobs is not None
-    got = {j["title"]: j["location"] for j in jobs}
-    assert got == {
-        "": "",
-        "Seen Job": "Tel Aviv",
-        "Card Job": "Haifa | Full time",
-        "Long Card": "",
-        "Empty Card": "",
-        "Herzliya": "Herzliya | IL",
-        "Second Title": "Second Title | Jerusalem",
-        "Workday Job": "Tel Aviv Israel",
-    }
+    got = [(j["title"], j["location"]) for j in jobs]
+    assert got == [
+        ("", ""),
+        ("Seen Job", "Tel Aviv"),
+        ("Card Job", "Haifa"),
+        ("Long Card", ""),
+        ("Empty Card", ""),
+        ("PM", "Herzliya | IL"),  # a short title is still a title
+        ("PM", ""),
+        ("Second Title", "Jerusalem"),
+        ("Workday Job", "Tel Aviv Israel"),
+    ]
 
 
 async def test_pagination_no_next() -> None:
@@ -359,6 +360,95 @@ async def test_eightfold_ignores_responses_that_are_not_a_search_result() -> Non
     jobs = await run(page)
     assert jobs is not None
     assert [j["title"] for j in jobs] == ["Job One"]
+
+
+@pytest.mark.parametrize(
+    ("lines", "expected"),
+    [
+        # location first (Oligo)
+        (
+            ["REMOTE (US)", "Director of Product Marketing", "FULL-TIME"],
+            ("Director of Product Marketing", "REMOTE (US)", ""),
+        ),
+        (
+            ["TEL AVIV, ISRAEL", "Software Engineering Team Lead", "FULL-TIME"],
+            ("Software Engineering Team Lead", "TEL AVIV, ISRAEL", ""),
+        ),
+        # location first, no type line (Freightos)
+        (
+            ["Dallas, US", "Business Development Executive", "Read more"],
+            ("Business Development Executive", "Dallas, US", ""),
+        ),
+        (["Modi'in, IL", "CISO", "Read more"], ("CISO", "Modi'in, IL", "")),
+        # team first (Weka, Pecan, Lasso)
+        (
+            ["Customer Success", "Data Platform Administrator (Hybrid, Bangalore)", "Bengaluru, India", "View Role"],
+            ("Data Platform Administrator (Hybrid, Bangalore)", "Bengaluru, India", "Customer Success"),
+        ),
+        (
+            ["Customer Success", "Designated Service Engineer", "South Korea", "Remote", "View Role"],
+            ("Designated Service Engineer", "South Korea | Remote", "Customer Success"),
+        ),
+        (
+            ["Analytics", "Predictive Analytics Solution Engineer", "Ramat Gan, Tel Aviv District, Israel"],
+            ("Predictive Analytics Solution Engineer", "Ramat Gan, Tel Aviv District, Israel", "Analytics"),
+        ),
+        (
+            ["Product", "Product Manager", "Ramat Gan, Tel Aviv District, Israel"],
+            ("Product Manager", "Ramat Gan, Tel Aviv District, Israel", "Product"),
+        ),
+        (["R&D", "Senior Backend Engineer", "IL", "Full-time", "Apply Now"], ("Senior Backend Engineer", "IL", "R&D")),
+        # title first (Panorays, Check Point, Komodor)
+        (
+            ["Enterprise Account Executive", "Sales", "United Kingdom"],
+            ("Enterprise Account Executive", "United Kingdom", "Sales"),
+        ),
+        (
+            ["Business Operations Specialist", "Israel: Tel Aviv-Yafo", "Operations"],
+            ("Business Operations Specialist", "Israel: Tel Aviv-Yafo", "Operations"),
+        ),
+        (
+            ["Product Engineer", "Atlanta, GA > Product Management > Full Time"],
+            ("Product Engineer", "Atlanta, GA > Product Management > Full Time", ""),
+        ),
+        # padded and dotted lines (Papaya Global, eToro): a short title is not a team name
+        (["Senior SDR", "New York" + " " * 90 + "Remote"], ("Senior SDR", "New York Remote", "")),
+        (["Junior Dealer", "Cyprus · Full-time"], ("Junior Dealer", "Cyprus", "")),
+        # location glued to the title with tabs (Komodor)
+        (
+            ["Enterprise Account Executive - East " + "\t" * 6 + "Boston, MA"],
+            ("Enterprise Account Executive - East", "Boston, MA", ""),
+        ),
+        (["Product Engineer - IL " + "\t" * 6 + "Tel Aviv"], ("Product Engineer - IL", "Tel Aviv", "")),
+        # titles that mention a town, a country code or one word are still titles
+        (["Customer Engineer - Kiryat Gat"], ("Customer Engineer - Kiryat Gat", "", "")),
+        (["Software Engineer, QA", "Haifa"], ("Software Engineer, QA", "Haifa", "")),
+        (["CISO"], ("CISO", "", "")),
+        (["Customer Success"], ("Customer Success", "", "")),
+        # nothing but boilerplate and places
+        (["Apply now", "Full-time"], None),
+        (["Tel Aviv", "Remote"], None),
+    ],
+)
+def test_parse_card(lines: list[str], expected: tuple[str, str, str] | None) -> None:
+    assert browser_crawl._parse_card(lines) == expected
+
+
+async def test_cards_keep_their_title_whatever_the_line_order() -> None:
+    cards = {
+        "/positions/position-a": ["TEL AVIV, ISRAEL", "Software Team Lead", "FULL-TIME"],
+        "/careers/weka-role-1": ["Customer Success", "Designated Service Engineer", "South Korea", "View Role"],
+        "/jobs/skip-me": ["Apply now"],
+        "/jobs/places-only": ["Tel Aviv", "Remote"],  # no title line at all: skipped
+    }
+    page = FakePage(link_fn=lambda i: [link(path, "\n".join(lines)) for path, lines in cards.items()] if i == 1 else [])
+    jobs = await run(page)
+    assert jobs is not None
+    got = {j["title"]: (j["location"], j["team"]) for j in jobs}
+    assert got == {
+        "Software Team Lead": ("TEL AVIV, ISRAEL", ""),
+        "Designated Service Engineer": ("South Korea", "Customer Success"),
+    }
 
 
 @pytest.mark.parametrize("exe", ["/bin/chromium", None])

@@ -2122,5 +2122,104 @@
   "n_jobs": null,
   "n_israel": null,
   "israel_only": true
+ },
+ {
+  "name": "Silverfort",
+  "domain": "silverfort.com",
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "silverfort/54.007",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 33,
+  "n_israel": 9
+ },
+ {
+  "name": "Overwolf",
+  "domain": "overwolf.com",
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "overwolf/B1.001",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 8,
+  "n_israel": 3
+ },
+ {
+  "name": "Oligo Security",
+  "domain": "oligo.security",
+  "careers_url": "https://www.oligo.security/company/careers",
+  "ats": "browser",
+  "slug": "https://www.oligo.security/company/careers",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Freightos",
+  "domain": "freightos.com",
+  "careers_url": "https://www.freightos.com/careers/",
+  "ats": "browser",
+  "slug": "https://www.freightos.com/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Weka",
+  "domain": "weka.io",
+  "careers_url": "https://www.weka.io/careers",
+  "ats": "browser",
+  "slug": "https://www.weka.io/careers",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Pecan AI",
+  "domain": "pecan.ai",
+  "careers_url": "https://www.pecan.ai/careers/",
+  "ats": "browser",
+  "slug": "https://www.pecan.ai/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Lasso Security",
+  "domain": "lasso.security",
+  "careers_url": "https://www.lasso.security/careers",
+  "ats": "browser",
+  "slug": "https://www.lasso.security/careers",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Panorays",
+  "domain": "panorays.com",
+  "careers_url": "https://panorays.com/careers/",
+  "ats": "browser",
+  "slug": "https://panorays.com/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Komodor",
+  "domain": "komodor.com",
+  "careers_url": "https://komodor.com/careers/",
+  "ats": "browser",
+  "slug": "https://komodor.com/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
  }
 ]
