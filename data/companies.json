@@ -2050,5 +2050,77 @@
   "status": "ok",
   "n_jobs": 0,
   "n_israel": 0
+ },
+ {
+  "name": "Nvidia",
+  "domain": "nvidia.com",
+  "careers_url": "https://jobs.nvidia.com/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://jobs.nvidia.com/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
+ },
+ {
+  "name": "Microsoft",
+  "domain": "microsoft.com",
+  "careers_url": "https://apply.careers.microsoft.com/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://apply.careers.microsoft.com/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
+ },
+ {
+  "name": "Qualcomm",
+  "domain": "qualcomm.com",
+  "careers_url": "https://careers.qualcomm.com/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://careers.qualcomm.com/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
+ },
+ {
+  "name": "Citi",
+  "domain": "citi.com",
+  "careers_url": "https://citi.eightfold.ai/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://citi.eightfold.ai/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
+ },
+ {
+  "name": "PayPal",
+  "domain": "paypal.com",
+  "careers_url": "https://paypal.eightfold.ai/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://paypal.eightfold.ai/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
+ },
+ {
+  "name": "Applied Materials",
+  "domain": "appliedmaterials.com",
+  "careers_url": "https://careers.appliedmaterials.com/careers?location=Israel",
+  "ats": "browser",
+  "slug": "https://careers.appliedmaterials.com/careers?location=Israel",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null,
+  "israel_only": true
  }
 ]

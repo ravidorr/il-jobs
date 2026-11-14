@@ -519,5 +519,35 @@
  "Explorium": {
   "ats": "comeet",
   "slug": "explorium/B4.00E"
+ },
+ "Nvidia": {
+  "ats": "browser",
+  "slug": "https://jobs.nvidia.com/careers?location=Israel",
+  "israel_only": true
+ },
+ "Microsoft": {
+  "ats": "browser",
+  "slug": "https://apply.careers.microsoft.com/careers?location=Israel",
+  "israel_only": true
+ },
+ "Qualcomm": {
+  "ats": "browser",
+  "slug": "https://careers.qualcomm.com/careers?location=Israel",
+  "israel_only": true
+ },
+ "Citi": {
+  "ats": "browser",
+  "slug": "https://citi.eightfold.ai/careers?location=Israel",
+  "israel_only": true
+ },
+ "PayPal": {
+  "ats": "browser",
+  "slug": "https://paypal.eightfold.ai/careers?location=Israel",
+  "israel_only": true
+ },
+ "Applied Materials": {
+  "ats": "browser",
+  "slug": "https://careers.appliedmaterials.com/careers?location=Israel",
+  "israel_only": true
  }
 }

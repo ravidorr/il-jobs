@@ -13,7 +13,9 @@ python3 send_email.py      # send the digest (add --dry-run to preview)
 ```
 
 Adapters: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Comeet (public hosted pages), and a generic
-Playwright crawler (`browser_crawl.py`, JSON-LD or job-looking links) for custom career pages.
+Playwright crawler (`browser_crawl.py`, JSON-LD or job-looking links) for custom career pages. It also reads HiBob boards and
+Eightfold career sites (the page's own search results, paged with "Next jobs"); pin an Eightfold site with its
+`...careers?location=Israel` URL.
 `data/overrides.json` pins a company to an ATS/slug or to a career page URL (`"ats": "browser"`).
 Add `"israel_only": true` to an override to keep only jobs located in Israel; use it for large multinational boards.
 `survey.py` is a dev tool that sniffs which ATS a custom career page uses.
