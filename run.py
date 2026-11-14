@@ -12,6 +12,9 @@ from browser_crawl import WHY, crawl_many
 from discover import ISRAEL
 
 DB = "data/jobs.db"
+DROP_MIN_OPEN = 10  # a company with fewer open jobs swings too much from day to day to judge a drop
+DROP_HOLD_RUNS = 3  # a sharp drop is held for this many runs in a row, then believed
+DROP_NOTE = "sharp drop"
 
 
 def init() -> sqlite3.Connection:
@@ -26,6 +29,21 @@ def init() -> sqlite3.Connection:
     with contextlib.suppress(sqlite3.OperationalError):  # column may already be there
         c.execute("ALTER TABLE crawl_log ADD COLUMN note TEXT")
     return c
+
+
+def sharp_drop(c: sqlite3.Connection, name: str, n: int) -> str:
+    """A crawl log note when a browser crawl returned under half the jobs open before, else an empty string.
+
+    A site that starts paginating or capping its list looks like a company that closed most of its jobs. The caller
+    then treats the crawl as failed, so the jobs stay open. After DROP_HOLD_RUNS held runs in a row the drop is real."""
+    prev = c.execute("SELECT COUNT(*) FROM jobs WHERE company=? AND status='open'", (name,)).fetchone()[0]
+    if prev < DROP_MIN_OPEN or n * 2 >= prev:
+        return ""
+    recent = c.execute("SELECT note FROM crawl_log WHERE company=? ORDER BY ts DESC LIMIT ?", (name, DROP_HOLD_RUNS))
+    notes = [note or "" for (note,) in recent]
+    if len(notes) == DROP_HOLD_RUNS and all(note.startswith(DROP_NOTE) for note in notes):
+        return ""
+    return f"{DROP_NOTE}: got {n}, {prev} open before"
 
 
 def crawl(co: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]] | None]:
@@ -59,6 +77,11 @@ def main() -> None:  # noqa: PLR0912
         jobs = fetched
         if fetched is not None and co.get("israel_only"):  # large multinational boards: keep Israel jobs only
             jobs = [j for j in fetched if ISRAEL.search(j["location"] or "")]
+        if jobs is not None and co["ats"] == "browser":
+            drop = sharp_drop(c, name, len(jobs))
+            if drop:
+                WHY[co["slug"]] = drop
+                jobs = None  # do not close jobs on a crawl that probably lost most of the list
         note = ""
         if jobs is None:
             note = WHY.get(co["slug"], "request failed")
@@ -110,7 +133,7 @@ def main() -> None:  # noqa: PLR0912
     for co, jobs in results:
         if co["ats"] == "browser":
             print(
-                f"  browser {co['name']:15s} {'FAILED' if jobs is None else len(jobs)}"
+                f"  browser {co['name']:15s} {'FAILED' if jobs is None or co['name'] in failed else len(jobs)}"
                 + (f"  <- {WHY[co['slug']]}" if co["slug"] in WHY else "")
             )
 

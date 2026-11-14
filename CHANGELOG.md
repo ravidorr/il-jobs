@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.7] - 2026-11-14
+
+### Fixed
+
+- A browser crawl that returns under half the jobs open before no longer closes the rest. A site that starts paginating or capping its list looks like a company that closed most of its roles; the crawl is now treated as failed (the jobs stay open, the crawl log says "sharp drop: got N, M open before"). It applies to companies with at least 10 open jobs, and after three held runs in a row the drop is believed and the jobs close. On the 13 logged runs it would have held nothing. API feeds are complete lists and are not affected.
+
 ## [0.2.6] - 2026-11-14
 
 ### Added
