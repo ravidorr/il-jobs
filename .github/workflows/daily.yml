@@ -92,3 +92,11 @@ jobs:
           name: jobs-db
           path: data/jobs.db
           retention-days: 7
+      - name: Email an alert if the run failed
+        if: ${{ failure() && steps.checkout.outcome == 'success' }}
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 send_alert.py "$RUN_URL"

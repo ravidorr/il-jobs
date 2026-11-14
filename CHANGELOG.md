@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.10] - 2026-11-14
+
+### Added
+
+- The daily workflow emails a short alert ("Job crawl failed") when any of its steps fails, with a link to the run. Before, a failed crawl step skipped the digest and nothing reached the inbox; only GitHub's failed-run notice said so. The alert comes from `send_alert.py`, which uses only the standard library so it still works when installing the dependencies was what failed.
+
 ## [0.2.9] - 2026-11-14
 
 ### Added
