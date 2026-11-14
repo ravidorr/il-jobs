@@ -124,7 +124,7 @@ a {
   margin-bottom: var(--space-5);
   border: var(--border-width) solid var(--line);
   border-radius: var(--radius-card);
-  background: var(--panel);
+  background: var(--accent-bg);
   box-shadow: var(--shadow-md);
 }
 
