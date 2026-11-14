@@ -2,13 +2,13 @@
  {
   "name": "Pentera",
   "domain": "pentera.io",
-  "careers_url": "https://pentera.io/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "pentera/C5.00D",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 33,
+  "n_israel": 16
  },
  {
   "name": "XM Cyber",
@@ -24,10 +24,10 @@
  {
   "name": "Cymulate",
   "domain": "cymulate.com",
-  "careers_url": "https://cymulate.com/careers/",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "cymulate",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 10,
   "n_israel": 3
@@ -46,13 +46,13 @@
  {
   "name": "Cynet",
   "domain": "cynet.com",
-  "careers_url": "https://www.cynet.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "cynet/33.00D",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 16,
+  "n_israel": 2
  },
  {
   "name": "Hunters",
@@ -68,10 +68,10 @@
  {
   "name": "Torq",
   "domain": "torq.io",
-  "careers_url": "https://www.torq.io/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "torq",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 23,
   "n_israel": 1
@@ -79,10 +79,10 @@
  {
   "name": "Semperis",
   "domain": "semperis.com",
-  "careers_url": "https://www.semperis.com/careers/",
+  "careers_url": "",
   "ats": "ashby",
   "slug": "semperis",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 23,
   "n_israel": 5
@@ -90,13 +90,13 @@
  {
   "name": "Coralogix",
   "domain": "coralogix.com",
-  "careers_url": "https://coralogix.com/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "coralogix/06.004",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 57,
+  "n_israel": 11
  },
  {
   "name": "Lasso Security",
@@ -112,10 +112,10 @@
  {
   "name": "Zenity",
   "domain": "zenity.io",
-  "careers_url": "https://www.zenity.io/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "zenity/19.000",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 30,
   "n_israel": 11
@@ -123,10 +123,10 @@
  {
   "name": "Apiiro",
   "domain": "apiiro.com",
-  "careers_url": "https://apiiro.com/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "apiiro",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 4,
   "n_israel": 4
@@ -134,10 +134,10 @@
  {
   "name": "Legit Security",
   "domain": "legitsecurity.com",
-  "careers_url": "https://www.legitsecurity.com/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "legitsecurity.com/37.004",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 7,
   "n_israel": 5
@@ -156,21 +156,21 @@
  {
   "name": "Upwind",
   "domain": "upwind.io",
-  "careers_url": "https://www.upwind.io/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "upwind/49.004",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 100,
+  "n_israel": 27
  },
  {
   "name": "Sweet Security",
   "domain": "sweet.security",
-  "careers_url": "https://www.sweet.security",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "sweetsecurity",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 5,
   "n_israel": 1
@@ -178,10 +178,10 @@
  {
   "name": "Reco",
   "domain": "reco.ai",
-  "careers_url": "https://www.reco.ai/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "reco/3A.00D",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 9,
   "n_israel": 2
@@ -200,35 +200,24 @@
  {
   "name": "Cycode",
   "domain": "cycode.com",
-  "careers_url": "https://cycode.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
-  "name": "Jit",
-  "domain": "jit.io",
   "careers_url": "",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "not_found",
-  "n_jobs": null,
-  "n_israel": null
+  "ats": "comeet",
+  "slug": "cycode/A8.00D",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 4,
+  "n_israel": 3
  },
  {
   "name": "Zero Networks",
   "domain": "zeronetworks.com",
-  "careers_url": "https://zeronetworks.com/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "zeronetworks/39.00F",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 11,
+  "n_israel": 5
  },
  {
   "name": "Intezer",
@@ -247,7 +236,7 @@
   "careers_url": "",
   "ats": "greenhouse",
   "slug": "bigid",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 10,
   "n_israel": 3
@@ -255,35 +244,24 @@
  {
   "name": "Sentra",
   "domain": "sentra.io",
-  "careers_url": "https://sentra.io/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "sentra/87.00B",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 22,
+  "n_israel": 11
  },
  {
   "name": "SafeBreach",
   "domain": "safebreach.com",
-  "careers_url": "https://www.safebreach.com/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "safebreach",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 5,
   "n_israel": 3
- },
- {
-  "name": "CyberArk",
-  "domain": "cyberark.com",
-  "careers_url": "https://www.paloaltonetworks.com/idira",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
  },
  {
   "name": "Radware",
@@ -299,29 +277,18 @@
  {
   "name": "KELA",
   "domain": "kelacyber.com",
-  "careers_url": "https://www.kelacyber.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "kela/2A.004",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 5,
+  "n_israel": 4
  },
  {
   "name": "Deep Instinct",
   "domain": "deepinstinct.com",
   "careers_url": "https://www.deepinstinct.com/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
-  "name": "Perception Point",
-  "domain": "perception-point.io",
-  "careers_url": "https://www.fortinet.com/products/fortimail-workspace-security",
   "ats": "",
   "slug": "",
   "source": "",
@@ -365,46 +332,24 @@
  {
   "name": "Guardz",
   "domain": "guardz.com",
-  "careers_url": "https://guardz.com/careers/",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "guardz",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 4,
   "n_israel": 2
  },
  {
-  "name": "Dream Security",
-  "domain": "dream.security",
-  "careers_url": "",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "not_found",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
   "name": "Cognyte",
   "domain": "cognyte.com",
-  "careers_url": "https://www.cognyte.com/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "cognyte/F2.009",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 40,
   "n_israel": 11
- },
- {
-  "name": "Cybereason",
-  "domain": "cybereason.com",
-  "careers_url": "https://www.levelblue.com/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
  },
  {
   "name": "Pillar Security",
@@ -431,10 +376,10 @@
  {
   "name": "Lightrun",
   "domain": "lightrun.com",
-  "careers_url": "https://lightrun.com/careers/",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "lightrun",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 1,
   "n_israel": 1
@@ -442,13 +387,13 @@
  {
   "name": "VAST Data",
   "domain": "vastdata.com",
-  "careers_url": "https://www.vastdata.com/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "vastdata/43.001",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 266,
+  "n_israel": 44
  },
  {
   "name": "Weka",
@@ -465,10 +410,10 @@
   "name": "Lightbits Labs",
   "domain": "lightbitslabs.com",
   "careers_url": "https://www.lightbitslabs.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
+  "ats": "browser",
+  "slug": "https://www.lightbitslabs.com/careers/",
+  "source": "override",
+  "status": "ok",
   "n_jobs": null,
   "n_israel": null
  },
@@ -486,21 +431,21 @@
  {
   "name": "DriveNets",
   "domain": "drivenets.com",
-  "careers_url": "",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "not_found",
+  "careers_url": "https://drivenets.com/careers/",
+  "ats": "browser",
+  "slug": "https://drivenets.com/careers/",
+  "source": "override",
+  "status": "ok",
   "n_jobs": null,
   "n_israel": null
  },
  {
   "name": "Infinidat",
   "domain": "infinidat.com",
-  "careers_url": "https://www.infinidat.com/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "infinidat/D6.003",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 36,
   "n_israel": 20
@@ -519,13 +464,13 @@
  {
   "name": "Stream Security",
   "domain": "stream.security",
-  "careers_url": "https://www.stream.security/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "streamsecurity/39.008",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 2,
+  "n_israel": 1
  },
  {
   "name": "env0",
@@ -550,23 +495,12 @@
   "n_israel": null
  },
  {
-  "name": "Quali",
-  "domain": "quali.com",
-  "careers_url": "https://www.quali.com/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
   "name": "Incredibuild",
   "domain": "incredibuild.com",
-  "careers_url": "https://www.incredibuild.com/careers",
+  "careers_url": "",
   "ats": "comeet",
   "slug": "incredibuild/66.00F",
-  "source": "page",
+  "source": "override",
   "status": "ok",
   "n_jobs": 6,
   "n_israel": 6
@@ -605,31 +539,9 @@
   "n_israel": null
  },
  {
-  "name": "Tabnine",
-  "domain": "tabnine.com",
-  "careers_url": "https://www.tricentis.com/company/careers?utm_source=www.tabnine.com&utm_medium=referral&utm_campaign=redirect",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
   "name": "Applitools",
   "domain": "applitools.com",
   "careers_url": "https://www.applitools.com/company/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
-  "name": "Sealights",
-  "domain": "sealights.io",
-  "careers_url": "https://www.tricentis.com/company/careers",
   "ats": "",
   "slug": "",
   "source": "",
@@ -693,17 +605,6 @@
   "n_israel": null
  },
  {
-  "name": "Rivery",
-  "domain": "rivery.io",
-  "careers_url": "https://rivery.io/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
   "name": "Upsolver",
   "domain": "upsolver.com",
   "careers_url": "",
@@ -726,34 +627,12 @@
   "n_israel": null
  },
  {
-  "name": "Decart",
-  "domain": "decart.ai",
-  "careers_url": "",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "not_found",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
-  "name": "Bria",
-  "domain": "bria.ai",
-  "careers_url": "https://bria.ai/careers",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
- },
- {
   "name": "Nexar",
   "domain": "nexar.com",
-  "careers_url": "https://nexar.com:443/jobs",
+  "careers_url": "",
   "ats": "smartrecruiters",
   "slug": "nexarinc",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 2,
   "n_israel": 2
@@ -761,21 +640,21 @@
  {
   "name": "Aidoc",
   "domain": "aidoc.com",
-  "careers_url": "https://www.aidoc.com/about/careers/",
-  "ats": "",
-  "slug": "",
-  "source": "",
-  "status": "careers_page_only",
-  "n_jobs": null,
-  "n_israel": null
+  "careers_url": "",
+  "ats": "greenhouse",
+  "slug": "aidocmedical",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 38,
+  "n_israel": 29
  },
  {
   "name": "Unframe",
   "domain": "unframe.ai",
-  "careers_url": "https://www.unframe.ai/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "unframe",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 30,
   "n_israel": 11
