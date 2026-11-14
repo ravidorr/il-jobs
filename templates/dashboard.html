@@ -170,12 +170,13 @@ function goneCount(){return Object.keys(gone).filter(function(k){return JOBS.som
 
 function render(focusIdx){
   var res=select(F),goneN=goneCount();
-  var open=JOBS.filter(function(j){return j.il}).length;
+  var israel=JOBS.filter(function(j){return j.il}).length;
+  var inScope=F.loc==='il'?israel:JOBS.length;
   $('goneN').textContent=goneN;
   var newN=JOBS.filter(function(j){return j.il&&fresh(j)&&!gone[key(j)]}).length;
-  $('heroTop').textContent=newN?newN+' new':open+' open';
+  $('heroTop').textContent=newN?newN+' new':israel+' open';
   $('heroBottom').textContent=newN?'roles this week.':'roles in Israel.';
-  $('summary').textContent='Showing '+res.length+' of '+open+' open roles in Israel. '+goneN+' discarded.';
+  $('summary').textContent='Showing '+res.length+' of '+inScope+' open roles '+(F.loc==='il'?'in Israel':'in all locations')+'. '+goneN+' discarded.';
   renderStories();
   var ul=$('list');
   if(!res.length){ul.replaceChildren(h('li',{class:'empty',text:'No roles match these filters.'}));$('pager').hidden=true;return}
