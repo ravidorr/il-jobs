@@ -126,6 +126,8 @@ class FakePage:
         self.ld: list[str] = kw.get("ld", [])
         self.link_fn: Callable[[int], list[Any]] = kw.get("link_fn", lambda _i: [])
         self.count_fn: Callable[[int], int] = kw.get("count_fn", lambda _i: 5)
+        self.sig_fn: Callable[[int], list[str]] = kw.get("sig_fn", lambda i: [f"/sig-{i}"])
+        self.sig_calls = 0
         self.btn: FakeEl = kw.get("btn", FakeEl(visible=False))
         self.locators: dict[str, FakeLoc] = kw.get("locators", {})
         self.frames: list[FakeFrame] = kw.get("frames", [])
@@ -175,6 +177,9 @@ class FakePage:
     async def eval_on_selector_all(self, selector: str, js: str) -> Any:
         if "ld+json" in selector:
             return self.ld
+        if js == "e=>e.map(x=>x.href)":
+            self.sig_calls += 1
+            return self.sig_fn(self.sig_calls)
         if js == "e=>e.length":
             self._count_calls += 1
             return self.count_fn(self._count_calls)

@@ -1,10 +1,8 @@
 # TODO
 
 - [ ] Review the Node 26 and Python 3.12 pins when a newer LTS is released
-- [ ] Fix the Israel location filter: the bare `IL` token also matches Illinois (for example "Chicago, IL"); about 5% of "Israel" matches are US jobs
 - [ ] Browser crawler: follow Eightfold pagination (Next button labelled "Next jobs") to unlock Nvidia, Microsoft, Qualcomm, Citi, PayPal and Applied Materials
 - [ ] Browser crawler: parse cards that put the location or team above the title (Oligo, Weka, Overwolf, Freightos and about ten more)
-- [ ] Browser crawler: monday.com pagination sometimes stops early (60 of 125 jobs on one run); wait for the page to settle before the next click
 - [ ] Workable rate-limits this network (429): Nuvei and Vayyar fail intermittently; CropX is waiting on the same limit (slug `cropx`)
 - [ ] Add adapters for the feeds found but not readable: teamme.link (Silverfort), Overwolf and Freightos JSON feeds, JazzHR (Tower), Teamtailor
 - [ ] Re-check boards that currently list no jobs: Capitolis, Torii, Hunters, Explorium

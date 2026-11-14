@@ -34,6 +34,37 @@ def test_israel_count() -> None:
     assert discover.israel_count([IL_JOB, US_JOB, {"location": None}, {"location": "Haifa"}]) == len([IL_JOB, IL_JOB])
 
 
+@pytest.mark.parametrize(
+    ("location", "expected"),
+    [
+        ("Tel Aviv-Yafo, IL", True),
+        ("Ramat Gan, IL", True),
+        ("Caesarea, IL", True),
+        ("Kiryat Ono, IL", True),
+        ("Rosh Haayin, IL", True),
+        ("Tirat Carmel, IL", True),
+        ("IL-Israel-Remote", True),
+        ("IL: Tel Aviv", True),
+        ("IL", True),
+        ("Remote, IL", True),
+        ("Haifa", True),
+        ("Chicago, IL", False),
+        ("Naperville, IL", False),
+        ("United States - IL Remote", False),
+        ("United States: Chicago IL | Sales | Full-time", False),
+        ("US-IL-Remote", False),
+        ("US-IL-Chicago-MSO", False),
+        ("Austin, TX; Chicago, IL", False),
+        ("Boston, MA; Rehovot, IL", True),
+        ("New York", False),
+        ("il", False),
+        ("", False),
+    ],
+)
+def test_israel_matcher(location: str, expected: bool) -> None:
+    assert discover.ISRAEL.search(location) is expected
+
+
 def test_load_overrides(workdir: Path) -> None:
     write_json(workdir / "data" / "overrides.json", {"A": {"ats": "x"}})
     (workdir / "data" / "new").mkdir()

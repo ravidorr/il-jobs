@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-11-14
+
+### Fixed
+
+- The Israel location filter no longer counts US locations that use the code `IL` for Illinois ("Chicago, IL", "US-IL-Remote"). A bare `IL` still counts as Israel for towns written "Caesarea, IL", and the dashboard and digest share the one matcher.
+- The browser crawler waits until a pagination click has changed the page before reading it, instead of a fixed 1.5 seconds, so slow pagers such as monday.com no longer stop early.
+
 ## [0.2.0] - 2026-11-14
 
 ### Added
