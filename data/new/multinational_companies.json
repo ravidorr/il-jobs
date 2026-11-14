@@ -412,9 +412,9 @@
   "careers_url": "",
   "ats": "smartrecruiters",
   "slug": "servicenow",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
-  "n_jobs": 813,
+  "n_jobs": 818,
   "n_israel": 25
  },
  {
@@ -431,7 +431,7 @@
  {
   "name": "Walmart Global Tech",
   "domain": "walmart.com",
-  "careers_url": "https://www.walmart.com/blocked?url=L2NhcmVlcnM=&uuid=102e9ea4-dfad-11f1-85d5-b802a83e4b9c&vid=&g=b",
+  "careers_url": "https://www.walmart.com/blocked?url=L2NhcmVlcnM=&uuid=2cc2e55e-e010-11f1-bf53-a8f655d904a9&vid=&g=b",
   "ats": "",
   "slug": "",
   "source": "",
@@ -469,7 +469,7 @@
   "slug": "WesternDigital",
   "source": "page",
   "status": "ok",
-  "n_jobs": 326,
+  "n_jobs": 325,
   "n_israel": 0
  },
  {
@@ -541,10 +541,10 @@
  {
   "name": "Datadog",
   "domain": "datadoghq.com",
-  "careers_url": "https://careers.datadoghq.com",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "datadog",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 384,
   "n_israel": 4
@@ -552,10 +552,10 @@
  {
   "name": "MongoDB",
   "domain": "mongodb.com",
-  "careers_url": "https://www.mongodb.com/company/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "mongodb",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
   "n_jobs": 391,
   "n_israel": 7
@@ -607,23 +607,23 @@
  {
   "name": "Snowflake",
   "domain": "snowflake.com",
-  "careers_url": "https://careers.snowflake.com/us/en",
+  "careers_url": "",
   "ats": "ashby",
   "slug": "snowflake",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
-  "n_jobs": 375,
+  "n_jobs": 376,
   "n_israel": 8
  },
  {
   "name": "Zscaler",
   "domain": "zscaler.com",
-  "careers_url": "https://www.zscaler.com/careers",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "zscaler",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
-  "n_jobs": 375,
+  "n_jobs": 373,
   "n_israel": 1
  },
  {
@@ -695,12 +695,12 @@
  {
   "name": "Okta",
   "domain": "okta.com",
-  "careers_url": "https://www.okta.com/company/careers/",
+  "careers_url": "",
   "ats": "greenhouse",
   "slug": "okta",
-  "source": "guess",
+  "source": "override",
   "status": "ok",
-  "n_jobs": 363,
+  "n_jobs": 362,
   "n_israel": 2
  }
 ]
