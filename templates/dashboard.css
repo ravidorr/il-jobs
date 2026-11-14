@@ -123,8 +123,9 @@ a {
 .more {
   margin-bottom: var(--space-5);
   border: var(--border-width) solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   background: var(--panel);
+  box-shadow: var(--shadow-md);
 }
 
 .more > summary {
@@ -152,6 +153,8 @@ a {
 
 .gaps {
   margin-bottom: var(--space-5);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
 }
 
 .gaps > summary {

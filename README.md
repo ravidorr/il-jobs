@@ -27,6 +27,8 @@ Manual run: Actions tab, "daily-job-digest", Run workflow.
 
 ## Dashboard
 
+Live page: <https://ravidorr.github.io/misra/>
+
 `python3 build_dashboard.py` writes `docs/index.html`: a mobile-first daily feed of open jobs (light and dark), with filters and per-job "Not for me" saved in the browser. It is readable by agents too: schema.org JobPosting JSON-LD, `data-*` hooks, and WebMCP tools (`search_jobs`, `list_new_jobs`, `get_job`, `discard_job`, `restore_job`, `list_coverage_gaps`).
 The daily workflow rebuilds and commits it. Serve it with GitHub Pages: Settings, Pages, Deploy from a branch, `main`, `/docs`.
 
