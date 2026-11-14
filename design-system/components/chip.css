@@ -1,0 +1,26 @@
+/*
+ * Chip: a toggle filter. State lives in aria-pressed, never in color alone.
+ *   <button type="button" class="chip" aria-pressed="false">Product</button>
+ *   <button type="button" class="chip chip-new" aria-pressed="true">New only</button>
+ */
+.chip {
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.chip-new[aria-pressed="true"] {
+  background: var(--lime);
+  color: var(--on-lime);
+}

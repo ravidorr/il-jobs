@@ -27,7 +27,7 @@ Manual run: Actions tab, "daily-job-digest", Run workflow.
 
 ## Dashboard
 
-`python3 build_dashboard.py` writes `docs/index.html` (all open jobs, filters, per-job Discard saved in the browser).
+`python3 build_dashboard.py` writes `docs/index.html`: a mobile-first daily feed of open jobs (light and dark), with filters and per-job "Not for me" saved in the browser. It is readable by agents too: schema.org JobPosting JSON-LD, `data-*` hooks, and WebMCP tools (`search_jobs`, `list_new_jobs`, `get_job`, `discard_job`, `restore_job`, `list_coverage_gaps`).
 The daily workflow rebuilds and commits it. Serve it with GitHub Pages: Settings, Pages, Deploy from a branch, `main`, `/docs`.
 
 ## Development
@@ -55,7 +55,7 @@ python3 -m venv .venv
 - [Security](./SECURITY.md)
 - [Privacy](./PRIVACY.md)
 - [Support](./SUPPORT.md)
-- [Design system](./design-system/README.md) (placeholder, no UI)
+- [Design system](./design-system/README.md) (tokens, components, logo brief, WebMCP tools)
 
 ## License
 

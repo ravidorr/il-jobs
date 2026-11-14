@@ -1,0 +1,68 @@
+/*
+ * Button. Use <a> for navigation (Apply) and <button type="button"> for actions.
+ *   <a class="btn btn-primary" href="...">Apply ↗</a>
+ *   <button type="button" class="btn">Show more</button>
+ *   <button type="button" class="btn btn-link">Not for me</button>
+ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-5);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--solid);
+  color: var(--on-solid);
+}
+
+.btn-link {
+  padding-inline: var(--space-2);
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+.btn-pill {
+  border-radius: var(--radius-pill);
+}
+
+.btn:focus-visible,
+.chip:focus-visible,
+.story:focus-visible,
+.field:focus-visible,
+.card a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn {
+    transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+  }
+}
+
+@media (hover: hover) {
+  .btn:not(.btn-link):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+}
+
+.btn:not(.btn-link):active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}

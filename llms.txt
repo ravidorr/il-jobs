@@ -15,6 +15,7 @@
 
 ## Miscellaneous
 
+- [Design system](/design-system/README.md): Tokens, components, logo brief, and the WebMCP tools the dashboard exposes.
 - [Agent guide](/AGENTS.md): Canonical instructions for AI coding agents.
 - [Contributing](/CONTRIBUTING.md): Development and contribution guidance.
 - [License](/LICENSE): License terms.
