@@ -16,6 +16,16 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = join(fileURLToPath(import.meta.url), '..', '..');
 const scriptPath = join(repoRoot, 'scripts/check-release.mjs');
 
+// Git exports GIT_DIR and friends to hooks (always in a worktree). They would point the temporary
+// repos below at the real repository, so child processes get an environment without them.
+function envWithoutGit(extra = {}) {
+  return Object.fromEntries(
+    Object.entries({ ...process.env, ...extra }).filter(
+      ([name]) => !name.startsWith('GIT_')
+    )
+  );
+}
+
 function withTempDir(run) {
   const root = mkdtempSync(join(tmpdir(), 'check-release-cli-'));
 
@@ -39,7 +49,7 @@ function runCheckReleaseCli(root, cliArgs, options = {}) {
   try {
     execFileSync(process.execPath, [options.script ?? scriptPath, ...cliArgs], {
       cwd: root,
-      env: { ...process.env, ...options.env },
+      env: envWithoutGit(options.env),
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -156,7 +166,7 @@ function git(root, ...gitArgs) {
   execFileSync(
     'git',
     ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...gitArgs],
-    { cwd: root, stdio: 'ignore' }
+    { cwd: root, env: envWithoutGit(), stdio: 'ignore' }
   );
 }
 
