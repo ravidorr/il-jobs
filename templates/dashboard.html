@@ -68,7 +68,7 @@ __CSS__
     </div>
   </details>
 
-  <details class="gaps notice" id="gaps" hidden><summary>Coverage gaps</summary></details>
+  <details class="gaps notice" id="gaps" hidden><summary id="gaps-title">Coverage gaps</summary></details>
 
   <noscript><p class="notice">The list needs JavaScript. Every open role is also in the JSON-LD block and the #data script of this page.</p></noscript>
   <ul class="feed" id="list" aria-label="Open roles"></ul>
@@ -92,7 +92,12 @@ var gone=lsGet(LS_D,{});
 function defaults(){return {q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false,hideStale:false}}
 var F=Object.assign(defaults(),lsGet(LS_F,{}));
 function key(j){return j.c+'|'+j.i}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function h(tag,attrs,kids){
+  var e=document.createElement(tag);
+  Object.keys(attrs||{}).forEach(function(k){var v=attrs[k];if(v==null||v===false)return;if(k==='text')e.textContent=v;else e.setAttribute(k,v)});
+  (kids||[]).forEach(function(c){if(c)e.appendChild(typeof c==='string'?document.createTextNode(c):c)});
+  return e}
+function safeUrl(u){try{var x=new URL(u,location.href);return x.protocol==='https:'||x.protocol==='http:'?x.href:'#'}catch(e){return '#'}}
 var TODAY=DATA.generated.slice(0,10);
 function dayNum(d){return Math.floor(Date.parse(d+'T00:00:00Z')/86400000)}
 function age(f){return f?dayNum(TODAY)-dayNum(f):null}
@@ -133,27 +138,28 @@ function renderStories(){
   JOBS.forEach(function(j){if(j.il&&fresh(j)&&!gone[key(j)])counts[j.c]=(counts[j.c]||0)+1});
   var names=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]||a.localeCompare(b)}).slice(0,15);
   $('hiring').hidden=!names.length;
-  $('stories').innerHTML=names.map(function(c){
+  $('stories').replaceChildren.apply($('stories'),names.map(function(c){
     var n=counts[c];
-    return '<button type="button" class="story story-new" data-company="'+esc(c)+'" aria-pressed="'+(F.company===c)+'" aria-label="'+esc(c)+', '+n+' new '+(n===1?'role':'roles')+'">'
-      +'<span class="story-badge" aria-hidden="true">'+esc(c.charAt(0).toUpperCase())+'</span><span class="story-name">'+esc(c)+'</span></button>'}).join('')}
+    return h('button',{type:'button',class:'story story-new','data-company':c,'aria-pressed':String(F.company===c),'aria-label':c+', '+n+' new '+(n===1?'role':'roles')},[
+      h('span',{class:'story-badge','aria-hidden':'true',text:c.charAt(0).toUpperCase()}),
+      h('span',{class:'story-name',text:c})])}))}
 
-function cardHtml(j){
-  var k=key(j),g=!!gone[k],isNew=fresh(j);
-  var flag=j.s?'<span class="sticker sticker-warn card-flag" title="This company could not be crawled in the latest run. The listing may be out of date.">OLD?</span>'
-    :isNew?'<span class="sticker card-flag">NEW</span>':'';
-  var tags=[j.l?'<span class="pill">'+esc(j.l)+'</span>':'',
-    j.k!=='other'?'<span class="pill pill-soft">'+KIND[j.k]+'</span>':'',
-    j.m?'<span class="pill">'+esc(j.m)+'</span>':'',
-    j.f?'<span class="card-seen">'+esc(ago(j.f))+'</span>':''].join('');
-  var what=esc(j.t)+' at '+esc(j.c);
-  return '<li><article class="card" data-job-id="'+esc(k)+'" data-company="'+esc(j.c)+'" data-category="'+CATS[j.k]+'" data-new="'+isNew+'" data-stale="'+j.s+'" data-discarded="'+g+'">'
-    +flag+'<p class="card-company">'+esc(j.c)+'</p>'
-    +'<h3 class="card-title"><a href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">'+esc(j.t)+'</a></h3>'
-    +'<p class="card-tags">'+tags+'</p>'
-    +'<p class="card-actions"><a class="btn btn-primary" href="'+esc(j.u)+'" target="_blank" rel="noopener noreferrer">Apply ↗<span class="sr-only"> to '+what+'</span></a>'
-    +'<button type="button" class="btn btn-link" data-act="toggle" data-k="'+esc(k)+'" aria-label="'+(g?'Restore':'Not for me')+': '+what+'">'+(g?'Restore':'Not for me')+'</button></p>'
-    +'</article></li>'}
+function cardEl(j){
+  var k=key(j),g=!!gone[k],isNew=fresh(j),what=j.t+' at '+j.c,url=safeUrl(j.u);
+  var art=h('article',{class:'card','data-job-id':k,'data-company':j.c,'data-category':CATS[j.k],'data-new':String(isNew),'data-stale':String(j.s),'data-discarded':String(g)});
+  if(j.s)art.appendChild(h('span',{class:'sticker sticker-warn card-flag',title:'This company could not be crawled in the latest run. The listing may be out of date.',text:'OLD?'}));
+  else if(isNew)art.appendChild(h('span',{class:'sticker card-flag',text:'NEW'}));
+  art.appendChild(h('p',{class:'card-company',text:j.c}));
+  art.appendChild(h('h3',{class:'card-title'},[h('a',{href:url,target:'_blank',rel:'noopener noreferrer',text:j.t})]));
+  art.appendChild(h('p',{class:'card-tags'},[
+    j.l&&h('span',{class:'pill',text:j.l}),
+    j.k!=='other'&&h('span',{class:'pill pill-soft',text:KIND[j.k]}),
+    j.m&&h('span',{class:'pill',text:j.m}),
+    j.f&&h('span',{class:'card-seen',text:ago(j.f)})]));
+  art.appendChild(h('p',{class:'card-actions'},[
+    h('a',{class:'btn btn-primary',href:url,target:'_blank',rel:'noopener noreferrer'},['Apply ↗',h('span',{class:'sr-only',text:' to '+what})]),
+    h('button',{type:'button',class:'btn btn-link','data-act':'toggle','data-k':k,'aria-label':(g?'Restore':'Not for me')+': '+what,text:g?'Restore':'Not for me'})]));
+  return h('li',{},[art])}
 
 function goneCount(){return Object.keys(gone).filter(function(k){return JOBS.some(function(j){return key(j)===k})}).length}
 
@@ -167,8 +173,8 @@ function render(focusIdx){
   $('summary').textContent='Showing '+res.length+' of '+open+' open roles in Israel. '+goneN+' discarded.';
   renderStories();
   var ul=$('list');
-  if(!res.length){ul.innerHTML='<li class="empty">No roles match these filters.</li>';$('more').hidden=true;return}
-  ul.innerHTML=res.slice(0,shown).map(cardHtml).join('');
+  if(!res.length){ul.replaceChildren(h('li',{class:'empty',text:'No roles match these filters.'}));$('more').hidden=true;return}
+  ul.replaceChildren.apply(ul,res.slice(0,shown).map(cardEl));
   $('more').hidden=res.length<=shown;
   if(!$('more').hidden)$('more').textContent='Show '+(res.length-shown)+' more';
   if(focusIdx!==undefined){var bs=ul.querySelectorAll('[data-act]');var b=bs[Math.min(focusIdx,bs.length-1)];if(b)b.focus()}}
@@ -203,10 +209,10 @@ $('file').addEventListener('change',function(){var f=this.files[0];if(!f)return;
 (function(){
   var G=DATA.gaps||{blocked:[],untracked:[]},el=$('gaps');
   if(!G.blocked.length&&!G.untracked.length)return;
-  var h='<summary>Coverage gaps: '+G.blocked.length+' failing in the latest run, '+G.untracked.length+' not tracked yet</summary>';
-  G.blocked.forEach(function(x){h+='<p><b>'+esc(x.c)+'</b>: '+esc(x.why)+'. Its roles are possibly old (last good crawl '+esc(x.last)+').</p>'});
-  if(G.untracked.length)h+='<p><b>Not tracked (no usable job feed found):</b> '+G.untracked.map(esc).join(', ')+'</p>';
-  el.innerHTML=h;el.hidden=false})();
+  $('gaps-title').textContent='Coverage gaps: '+G.blocked.length+' failing in the latest run, '+G.untracked.length+' not tracked yet';
+  G.blocked.forEach(function(x){el.appendChild(h('p',{},[h('b',{text:x.c}),': '+x.why+'. Its roles are possibly old (last good crawl '+x.last+').']))});
+  if(G.untracked.length)el.appendChild(h('p',{},[h('b',{text:'Not tracked (no usable job feed found):'}),' '+G.untracked.join(', ')]));
+  el.hidden=false})();
 
 /* Theme: auto follows the system; light and dark are forced with data-theme. */
 var MODES=['auto','light','dark'];
