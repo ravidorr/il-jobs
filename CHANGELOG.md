@@ -6,7 +6,7 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ### Added
 
-- Pin for Tower Semiconductor: its career site has no feed, but one search page lists all 73 open positions (24 in Israel), so the browser crawler reads that page.
+- Pin for Tower Semiconductor: its career site has no feed, but one search page lists every open position (73, 24 of them in Israel, when this was added), so the browser crawler reads that page.
 
 ### Changed
 

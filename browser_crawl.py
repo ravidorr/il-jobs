@@ -12,8 +12,10 @@ from playwright.async_api import async_playwright
 
 from discover import ISRAEL
 
-JOBLINK = re.compile(r"/(jobs?|positions?|careers?|openings?|vacanc\w+|job-?post\w*)/[^/?#]{4,}|[?&]job_id=\w+", re.I)
-JOB_ID = re.compile(r"[?&](job_id=\w+)", re.I)  # Tower: /job-description/?job_id=9672, the query is the job
+JOBLINK = re.compile(
+    r"/(jobs?|positions?|careers?|openings?|vacanc\w+|job-?post\w*)/[^/?#]{4,}|[?&]job_id=[^&#]+", re.I
+)
+JOB_ID = re.compile(r"[?&](job_id=[^&#]+)", re.I)  # Tower: /job-description/?job_id=9672, the query is the job
 NOT_JOB = re.compile(
     r"/(department|departments|category|team|teams|locations?|working-at|life-at|benefits|students?|early-careers?|login|search|saved|talent-network)\b|#",
     re.I,
@@ -146,7 +148,7 @@ def _parse_card(lines: list[str]) -> tuple[str, str, str] | None:
     parts = [p for ln in lines for p in re.split(r"\t+|\s+·\s+", ln)]
     lines = [" ".join(p.split()) for p in parts]
     lines = [ln for ln in lines if ln and ln.lower() not in CARD_NOISE]
-    places = [ln for ln in lines if _is_location(ln)]
+    places = list(dict.fromkeys(ln for ln in lines if _is_location(ln)))
     rest = list(dict.fromkeys(ln for ln in lines if ln not in places))  # a table row repeats its title cell
     if not rest:
         return None
@@ -163,7 +165,7 @@ def _job_key(href: str) -> str:
     """The link without tracking parameters, but keeping a job_id query: there it is the only thing naming the job."""
     key = href.split("?", maxsplit=1)[0].rstrip("/")
     m = JOB_ID.search(href)
-    return f"{key}?{m[1]}" if m else key
+    return f"{key}?job_id={m[1][len('job_id=') :]}" if m else key
 
 
 def _job(job_id: Any, title: Any, location: Any, url: Any, team: Any = "") -> dict[str, Any]:
