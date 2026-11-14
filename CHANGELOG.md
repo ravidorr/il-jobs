@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.8] - 2026-11-14
+
+### Fixed
+
+- A browser crawl that finds no jobs at a company with open jobs is held the same way as a sharp drop: nothing closes and the crawl log says "sharp drop: got 0, N open before" with the crawler's own reason in brackets. At a company with fewer than 10 open jobs the jobs close on the fourth day if it was held on each of the three days before, so a small company that really closed every role no longer keeps them open for good. At 10 or more open jobs an empty crawl is never believed and the company keeps showing as failing: that many roles vanishing at once is far more likely a page that stopped working than closed roles, and closing them would raise no alert. A crawl that fails (blocked page, HTTP error) is a failure, not an empty result, and is unchanged. A small company behind a bot wall that answers with an empty page can still close its few jobs after three days; they reopen when the site is read again.
+- More bot-protection pages are recognised by their title and count as a failed crawl: those mentioning a CAPTCHA, "request unsuccessful", "access to this page has been denied" and "pardon our interruption".
+
 ## [0.2.7] - 2026-11-14
 
 ### Fixed

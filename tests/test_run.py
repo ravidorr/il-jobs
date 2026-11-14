@@ -102,7 +102,7 @@ def test_main_full_cycle(
     notes = dict(check.execute("SELECT company, note FROM crawl_log"))
     assert notes["Failing"] == "request failed"
     assert notes["Br3"] == "empty page"
-    assert notes["Br2"] == "request failed"
+    assert notes["Br2"] == f"{run.DROP_NOTE}: got 0, 1 open before"
     assert notes["Br5"] == "request failed"
     assert notes["New"] == ""
     check.close()
@@ -344,14 +344,104 @@ def test_the_same_drop_on_one_day_is_held_however_often_it_runs(
     assert open_jobs() == OPEN  # one earlier day is held, not three
 
 
-def test_an_empty_result_with_history_is_never_a_sharp_drop(workdir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    seed()
-    log_runs("Big", ["empty page"] * HELD_RUNS)
+SMALL = run.DROP_MIN_OPEN - 5
+REASON = "no jobs found, title='Careers', links=81"
+
+
+def job_row(job_id: str, name: str = "Big") -> tuple[str, int]:
+    check = sqlite3.connect(run.DB)
+    row: tuple[str, int] = check.execute(
+        "SELECT status, reported FROM jobs WHERE company=? AND job_id=?", (name, job_id)
+    ).fetchone()
+    check.close()
+    return row
+
+
+def test_an_empty_result_at_a_small_company_is_held_three_days_then_believed(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None]
+) -> None:
+    seed(count=SMALL)
+    for n in range(1, HELD_RUNS + 1):
+        day(n)
+        crawl(workdir, monkeypatch, [])
+        assert open_jobs() == SMALL, f"day {n} is held"
+        assert last_log() == (0, 0, held_note(0, SMALL))
+    day(HELD_RUNS + 1)
     crawl(workdir, monkeypatch, [])
-    assert open_jobs() == OPEN  # held for good: the existing empty-page guard has no way out
-    ok, count, note = last_log()
-    assert (ok, count) == (0, 0)
-    assert not note.startswith(run.DROP_NOTE)
+    assert open_jobs() == 0  # a small company that really closed every role is believed on the fourth day
+    assert last_log() == (1, 0, f"{run.DROP_BELIEVED}: got 0, {SMALL} open before")
+
+
+def test_an_empty_result_at_a_big_company_is_never_believed(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None], capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A page that stopped working (a cookie wall, a 200 block page) must not close this many jobs, ever."""
+    seed(count=run.DROP_MIN_OPEN)
+    for n in range(1, HELD_RUNS * 2 + 1):
+        day(n)
+        crawl(workdir, monkeypatch, [])
+        assert open_jobs() == run.DROP_MIN_OPEN, f"day {n} is still held"
+        assert last_log() == (0, 0, held_note(0, run.DROP_MIN_OPEN))
+    assert "FAILED" in capsys.readouterr().out  # and it keeps showing as failing
+
+
+def test_an_empty_result_keeps_the_crawlers_reason_on_every_day_and_recovery_reopens_the_jobs(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None]
+) -> None:
+    seed(count=SMALL, reported=1)
+    for n in range(1, HELD_RUNS + 1):
+        day(n)
+        monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], REASON)
+        crawl(workdir, monkeypatch, [])
+        assert last_log() == (0, 0, f"{held_note(0, SMALL)} ({REASON})")
+    day(HELD_RUNS + 1)
+    monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], REASON)
+    crawl(workdir, monkeypatch, [])
+    assert last_log() == (1, 0, f"{run.DROP_BELIEVED}: got 0, {SMALL} open before ({REASON})")  # one prefix, one reason
+    assert open_jobs() == 0
+    day(HELD_RUNS + 2)  # the site recovers, with one new job
+    crawl(workdir, monkeypatch, [*returned(SMALL), job("new")])
+    assert open_jobs() == SMALL + 1
+    assert job_row("j0") == ("open", 1)  # reopened, and not reported again: no digest spam
+    assert job_row("new") == ("open", 0)
+    assert last_log() == (1, SMALL + 1, "")  # a believed note does not count as a held day or linger
+
+
+@pytest.mark.parametrize(
+    "stale", [f"{run.DROP_BELIEVED}: got 0, 20 open before", f"{run.DROP_NOTE}: got 0, 20 open before"]
+)
+def test_a_note_left_in_the_reasons_by_an_earlier_run_is_not_nested(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, stale: str
+) -> None:
+    seed()
+    monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], stale)
+    crawl(workdir, monkeypatch, [])
+    assert last_log() == (0, 0, held_note(0))  # no bracketed copy of the old note
+
+
+def test_an_empty_result_without_history_is_just_an_empty_company(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], "empty page")
+    crawl(workdir, monkeypatch, [])
+    assert last_log() == (1, 0, "empty page")  # nothing was open, so nothing to hold
+
+
+@pytest.mark.parametrize("case", [(run.DROP_MIN_OPEN + 2, False), (SMALL, True)], ids=["big", "small"])
+@pytest.mark.parametrize("fetched", ["raw empty", "no Israel jobs"])
+def test_an_israel_only_company_with_no_israel_jobs_is_an_empty_crawl(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None], case: tuple[int, bool], fetched: str
+) -> None:
+    open_before, believed = case
+    seed(count=open_before, location="Tel Aviv, Israel")
+    board = [] if fetched == "raw empty" else [{**job(f"a{i}"), "location": "Austin, TX"} for i in range(50)]
+    for n in range(1, HELD_RUNS + 1):
+        day(n)
+        crawl(workdir, monkeypatch, board, {**BIG, "israel_only": True})
+        assert (open_jobs(), last_log()) == (open_before, (0, 0, held_note(0, open_before)))
+    day(HELD_RUNS + 1)
+    crawl(workdir, monkeypatch, board, {**BIG, "israel_only": True})
+    assert open_jobs() == (0 if believed else open_before)
 
 
 def test_one_held_company_does_not_hold_another(
