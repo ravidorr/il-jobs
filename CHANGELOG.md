@@ -2,6 +2,16 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.10] - 2026-11-14
+
+### Added
+
+- The daily workflow emails a short alert ("Daily job run failed") when a step fails or the run is cancelled, for example by hitting its time limit. It lists the outcome of the verify, crawl, digest and commit steps and links to the run. Before, a failed crawl step skipped the digest and nothing reached the inbox; only GitHub's failed-run notice said so. The alert comes from `send_alert.py`, which uses only the standard library so it still works when installing the dependencies was what failed. It uses the same Gmail account as the digest, so it cannot report a Gmail outage.
+
+### Changed
+
+- The crawl and digest steps of the daily workflow now stop after 20 and 5 minutes. A step that times out fails and is alerted, instead of the whole 30-minute job being cancelled.
+
 ## [0.2.9] - 2026-11-14
 
 ### Added
