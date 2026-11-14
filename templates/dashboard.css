@@ -124,7 +124,7 @@ a {
   margin-bottom: var(--space-5);
   border: var(--border-width) solid var(--line);
   border-radius: var(--radius-card);
-  background: var(--panel);
+  background: var(--accent-bg);
   box-shadow: var(--shadow-md);
 }
 
@@ -152,6 +152,7 @@ a {
 }
 
 .gaps {
+  margin-top: var(--space-5);
   margin-bottom: var(--space-5);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-md);
@@ -180,9 +181,21 @@ a {
   text-align: center;
 }
 
-.page-end {
-  display: block;
-  margin: var(--space-6) auto 0;
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 var(--space-5);
+}
+
+.pager-size {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
 }
 
 .foot {
@@ -195,5 +208,44 @@ a {
 @media (width <= 560px) {
   .card-actions .btn-primary {
     flex: 1;
+  }
+}
+
+.pager[hidden] {
+  display: none;
+}
+
+.pager .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Wide screens: compact header so filters and the first cards fit in one screen. */
+@media (width >= 561px) {
+  .page {
+    padding-top: var(--space-3);
+  }
+
+  .top {
+    margin-bottom: var(--space-3);
+  }
+
+  .hero {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+
+  .hero br {
+    display: none;
+  }
+
+  .sub {
+    margin: var(--space-2) 0 var(--space-3);
+    font-size: var(--text-md);
+  }
+
+  .controls,
+  .more {
+    margin-bottom: var(--space-3);
   }
 }
