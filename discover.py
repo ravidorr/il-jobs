@@ -104,6 +104,8 @@ def discover(row: dict[str, str]) -> dict[str, Any]:  # noqa: PLR0912
         res.update(
             ats=ov["ats"], slug=ov["slug"], source="override", careers_url=ov["slug"] if ov["ats"] == "browser" else ""
         )
+        if ov.get("israel_only"):
+            res["israel_only"] = True  # the crawl keeps only jobs located in Israel
         if ov["ats"] == "browser":
             res["status"] = "ok"  # verified at crawl time
             print(f"{name:25s} ok(browser)        {ov['slug']}", flush=True)

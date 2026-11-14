@@ -9,6 +9,7 @@ from typing import Any
 
 from adapters import ADAPTERS
 from browser_crawl import WHY, crawl_many
+from discover import ISRAEL
 
 DB = "data/jobs.db"
 
@@ -53,8 +54,11 @@ def main() -> None:  # noqa: PLR0912
                 jobs = None  # page suddenly yields nothing: assume the extractor broke, do not close jobs
             results.append((co, jobs))
     failed: list[str] = []
-    for co, jobs in results:
+    for co, fetched in results:
         name = co["name"]
+        jobs = fetched
+        if fetched is not None and co.get("israel_only"):  # large multinational boards: keep Israel jobs only
+            jobs = [j for j in fetched if ISRAEL.search(j["location"] or "")]
         note = ""
         if jobs is None:
             note = WHY.get(co["slug"], "request failed")

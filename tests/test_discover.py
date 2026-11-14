@@ -113,6 +113,14 @@ def test_override_unverified(env: Env, monkeypatch: pytest.MonkeyPatch) -> None:
     assert env.calls == []
 
 
+def test_override_israel_only_flag(env: Env, monkeypatch: pytest.MonkeyPatch) -> None:
+    flagged = {"Acme Co": {"ats": "ov", "slug": "s", "verify": False, "israel_only": True}}
+    monkeypatch.setattr(discover, "OVERRIDES", flagged)
+    assert discover.discover(ROW)["israel_only"] is True
+    monkeypatch.setattr(discover, "OVERRIDES", {"Acme Co": {"ats": "ov", "slug": "s", "verify": False}})
+    assert "israel_only" not in discover.discover(ROW)
+
+
 def test_override_verified(env: Env, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(discover, "OVERRIDES", {"Acme Co": {"ats": "ov", "slug": "s"}})
     env.jobs[("ov", "s")] = [IL_JOB, US_JOB]
