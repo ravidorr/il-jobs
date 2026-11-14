@@ -198,32 +198,36 @@ async def test_pagination_runs_to_the_cap() -> None:
     assert el.clicks == cap - 1
 
 
-async def test_pagination_waits_until_the_page_changes() -> None:
+async def test_pagination_waits_while_the_pager_clears_the_list() -> None:
+    """A pager may empty the list while it fetches the next page; an empty list is not a finished crawl."""
     el = FakeEl()
-    changes_after = 3  # the page only changes on the third poll after the click
+    page_two_at = 4  # collect calls: 1 = page one, 2 and 3 = list cleared mid-load, 4 = page two appears
+
+    def links(i: int) -> list[list[str]]:
+        if i == 1:
+            return [link("/jobs/job-one", "Job One")]
+        if i == page_two_at:
+            return [link("/jobs/job-two", "Job Two")]
+        return []
+
+    page = FakePage(link_fn=links, locators={'body a[rel="next"]': FakeLoc(1, el)})
+    jobs = await run(page)
+    assert jobs is not None
+    assert [j["title"] for j in jobs] == ["Job One", "Job Two"]
+    assert el.clicks == TWO
+
+
+async def test_pagination_gives_up_waiting_for_new_links() -> None:
+    el = FakeEl()
     page = FakePage(
-        link_fn=lambda i: [link(f"/jobs/job-{i}", f"Job {i}")] if i <= TWO else [],
-        sig_fn=lambda i: ["/same"] if i < changes_after else [f"/new-{i}"],
+        link_fn=lambda i: [link("/jobs/job-one", "Job One")] if i == 1 else [],
         locators={'body a[rel="next"]': FakeLoc(1, el)},
     )
     jobs = await run(page)
     assert jobs is not None
-    assert len(jobs) == TWO
-    # click 1: read before, poll (same), poll (changed) = 3 reads; click 2: read before, poll (changed) = 2 reads
-    assert page.sig_calls == changes_after + 2
-
-
-async def test_pagination_gives_up_waiting_for_a_change() -> None:
-    el = FakeEl()
-    page = FakePage(
-        link_fn=lambda i: [link(f"/jobs/job-{i}", f"Job {i}")] if i <= TWO else [],
-        sig_fn=lambda _i: ["/same"],
-        locators={'body a[rel="next"]': FakeLoc(1, el)},
-    )
-    jobs = await run(page)
-    assert jobs is not None
-    assert len(jobs) == TWO
-    assert page.sig_calls == 2 * (browser_crawl.SETTLE_POLLS + 1)  # two clicks, each: one read before and every poll
+    assert len(jobs) == 1
+    assert el.clicks == 1
+    assert page._links_calls == 1 + browser_crawl.SETTLE_POLLS  # first collect, then one per poll until it gives up
 
 
 @pytest.mark.parametrize("exe", ["/bin/chromium", None])

@@ -29,7 +29,7 @@ NEXT_SELS = [
     'button:text-is("Next")',
     'a:text-is("Next >")',
 ]
-SETTLE_POLLS = 32  # at 250 ms: wait up to 8 s for a pagination click to change the page
+SETTLE_POLLS = 32  # at 250 ms: wait up to 8 s for a pagination click to show new job links
 MORE = re.compile(r"load more|show more|see more|view more|more jobs|more positions", re.I)
 LANGS = {
     "english",
@@ -222,16 +222,16 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                     )
                     if re.search(r"disabled|true", cls, re.I) or await nxt.is_disabled():
                         break
-                    before = await _page_signature(page)
                     await nxt.click(timeout=3000)
                 except Exception:
                     break
-                for _poll in range(SETTLE_POLLS):  # wait until the click has changed the page, not a fixed time
+                found = 0
+                for _poll in range(SETTLE_POLLS):  # wait for new job links; a pager may clear the list first
                     await page.wait_for_timeout(250)
-                    if await _page_signature(page) != before:
+                    found = await collect()
+                    if found:
                         break
-                await page.wait_for_timeout(300)
-                if not await collect():
+                if not found:
                     break
             if not out:
                 WHY[url] = f"no jobs found, title={title!r}, final={page.url[:80]}, links={link_count}"
@@ -241,12 +241,6 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
             return None
         finally:
             await page.close()
-
-
-async def _page_signature(page: Any) -> str:
-    """Every link on the page, joined: changes when a pagination click swaps the visible jobs."""
-    hrefs = await page.eval_on_selector_all("a[href]", "e=>e.map(x=>x.href)")
-    return "|".join(hrefs)
 
 
 async def _run(urls: list[str]) -> dict[str, list[dict[str, Any]] | None]:
