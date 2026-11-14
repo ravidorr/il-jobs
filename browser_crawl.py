@@ -54,8 +54,10 @@ LANGS = {
     "polski",
     "nederlands",
 }
-BLOCKED = re.compile(
-    r"just a moment|attention required|security checkpoint|access denied|error 429|verify you are human", re.I
+BLOCKED = re.compile(  # titles of bot-protection pages, some of which answer HTTP 200 with no jobs on them
+    r"just a moment|attention required|security checkpoint|access denied|error 429|verify you are human"
+    r"|captcha|request unsuccessful|access to this page has been denied|pardon our interruption",
+    re.I,
 )
 EXE = os.environ.get("PW_CHROMIUM") or (
     "/opt/pw-browsers/chromium" if os.path.exists("/opt/pw-browsers/chromium") else None

@@ -36,8 +36,19 @@ async def test_http_error_recorded() -> None:
     assert WHY[URL].startswith("HTTP 404")
 
 
-async def test_blocked_title_recorded() -> None:
-    assert await run(FakePage(goto_result=None, title="Just a moment...")) is None
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Just a moment...",
+        "Attention Required! | Cloudflare",
+        "Please complete the CAPTCHA to continue",
+        "Request unsuccessful. Incapsula incident ID: 123",
+        "Access to this page has been denied",
+        "Pardon Our Interruption",
+    ],
+)
+async def test_blocked_title_recorded(title: str) -> None:
+    assert await run(FakePage(goto_result=None, title=title)) is None  # a failure, not an empty company
     assert WHY[URL].startswith("blocked page")
 
 
