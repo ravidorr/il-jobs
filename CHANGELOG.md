@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.8] - 2026-11-14
+
+### Fixed
+
+- A browser crawl that finds no jobs at a company with open jobs is now held the same way as a sharp drop: nothing closes, the crawl log says "sharp drop: got 0, N open before" with the crawler's own reason in brackets, and the jobs close on the fourth day if the company was held on each of the three days before. It used to be held for good, so a company that really closed every role kept them open. Unlike a sharp drop it applies to any company with open jobs, small ones included. A crawl that fails (blocked page, HTTP error) is a failure, not an empty result, and is unchanged.
+
 ## [0.2.7] - 2026-11-14
 
 ### Fixed

@@ -12,7 +12,7 @@ from browser_crawl import WHY, crawl_many
 from discover import ISRAEL
 
 DB = "data/jobs.db"
-DROP_MIN_OPEN = 10  # a company with fewer open jobs swings too much to judge a drop
+DROP_MIN_OPEN = 10  # a company with fewer open jobs swings too much to judge a drop, unless it returns nothing
 DROP_HOLD_DAYS = 3  # a sharp drop is held on this many days in a row; the next day believes it
 DROP_NOTE = "sharp drop"  # crawl log note prefix of a held crawl
 DROP_BELIEVED = f"drop believed after {DROP_HOLD_DAYS} held days"
@@ -35,13 +35,15 @@ def init() -> sqlite3.Connection:
 def sharp_drop(c: sqlite3.Connection, name: str, n: int, today: str) -> tuple[str, bool]:
     """(crawl log note, held) for a browser crawl that returned n jobs. No note when it is not a sharp drop.
 
-    A sharp drop is fewer than half the jobs open before. A site that starts paginating or capping its list looks
-    like a company that closed most of its jobs, so the crawl is held: its jobs are recorded but nothing closes. The
+    A sharp drop is fewer than half the jobs open before, or no jobs at all when any were open. A site that starts
+    paginating or capping its list, or a page the extractor can no longer read, looks like a company that closed
+    most of its jobs, so the crawl is held: its jobs are recorded but nothing closes. The
     drop is believed on the next day once the company was held on each of the last DROP_HOLD_DAYS earlier days (a
     run that failed another way in between starts the count again). Runs on `today` do not count, so re-running the
     pipeline within a day cannot use up the hold."""
     prev = c.execute("SELECT COUNT(*) FROM jobs WHERE company=? AND status='open'", (name,)).fetchone()[0]
-    if prev < DROP_MIN_OPEN or n * 2 >= prev:
+    empty = n == 0 and prev > 0
+    if not empty and (prev < DROP_MIN_OPEN or n * 2 >= prev):
         return "", False
     rows = c.execute(
         "SELECT substr(ts,1,10), note FROM crawl_log WHERE company=? AND substr(ts,1,10) < ? ORDER BY ts DESC",
@@ -82,12 +84,7 @@ def main() -> None:  # noqa: PLR0912
         results = list(ex.map(crawl, api))
     if br:
         got = crawl_many([co["slug"] for co in br])
-        for co in br:
-            jobs = got.get(co["slug"])
-            prev = c.execute("SELECT COUNT(*) FROM jobs WHERE company=? AND status='open'", (co["name"],)).fetchone()[0]
-            if jobs is not None and not jobs and prev:
-                jobs = None  # page suddenly yields nothing: assume the extractor broke, do not close jobs
-            results.append((co, jobs))
+        results.extend((co, got.get(co["slug"])) for co in br)
     failed: list[str] = []
     for co, fetched in results:
         name = co["name"]
@@ -97,8 +94,11 @@ def main() -> None:  # noqa: PLR0912
         drop, held = (
             sharp_drop(c, name, len(jobs), now[:10]) if jobs is not None and co["ats"] == "browser" else ("", False)
         )
-        if drop:
-            WHY[co["slug"]] = drop
+        if drop:  # keep the crawler's own reason for an empty page next to the hold
+            reason = WHY.get(co["slug"], "")
+            if reason.startswith((DROP_NOTE, DROP_BELIEVED)):
+                reason = ""  # our own note from an earlier run in this process, not the crawler's
+            WHY[co["slug"]] = f"{drop} ({reason})" if reason else drop
         note = drop
         if jobs is None:
             note = WHY.get(co["slug"], "request failed")

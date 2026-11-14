@@ -102,7 +102,7 @@ def test_main_full_cycle(
     notes = dict(check.execute("SELECT company, note FROM crawl_log"))
     assert notes["Failing"] == "request failed"
     assert notes["Br3"] == "empty page"
-    assert notes["Br2"] == "request failed"
+    assert notes["Br2"] == f"{run.DROP_NOTE}: got 0, 1 open before"
     assert notes["Br5"] == "request failed"
     assert notes["New"] == ""
     check.close()
@@ -344,14 +344,42 @@ def test_the_same_drop_on_one_day_is_held_however_often_it_runs(
     assert open_jobs() == OPEN  # one earlier day is held, not three
 
 
-def test_an_empty_result_with_history_is_never_a_sharp_drop(workdir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    seed()
-    log_runs("Big", ["empty page"] * HELD_RUNS)
+@pytest.mark.parametrize("open_before", [run.DROP_MIN_OPEN - 5, OPEN])
+def test_an_empty_result_is_held_three_days_then_believed(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None], open_before: int
+) -> None:
+    """The same hold as a sharp drop, for any company with open jobs, small ones included."""
+    seed(count=open_before)
+    note = held_note(0, open_before)
+    for n in range(1, HELD_RUNS + 1):
+        day(n)
+        crawl(workdir, monkeypatch, [])
+        assert open_jobs() == open_before, f"day {n} is held"
+        assert last_log() == (0, 0, note)
+    day(HELD_RUNS + 1)
     crawl(workdir, monkeypatch, [])
-    assert open_jobs() == OPEN  # held for good: the existing empty-page guard has no way out
-    ok, count, note = last_log()
-    assert (ok, count) == (0, 0)
-    assert not note.startswith(run.DROP_NOTE)
+    assert open_jobs() == 0  # a company that really closed every role is believed on the fourth day
+    assert last_log() == (1, 0, f"{run.DROP_BELIEVED}: got 0, {open_before} open before")
+
+
+def test_an_empty_result_keeps_the_crawlers_own_reason(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    seed()
+    monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], "no jobs found, title='Careers', links=81")
+    crawl(workdir, monkeypatch, [])
+    note = f"{held_note(0)} (no jobs found, title='Careers', links=81)"
+    assert last_log() == (0, 0, note)
+    assert f"FAILED  <- {note}" in capsys.readouterr().out
+    assert note.startswith(run.DROP_NOTE)  # so it counts as a held day
+
+
+def test_an_empty_result_without_history_is_just_an_empty_company(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setitem(browser_crawl.WHY, BIG["slug"], "empty page")
+    crawl(workdir, monkeypatch, [])
+    assert last_log() == (1, 0, "empty page")  # nothing was open, so nothing to hold
 
 
 def test_one_held_company_does_not_hold_another(
