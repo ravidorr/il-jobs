@@ -13,7 +13,7 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 ### Fixed
 
 - The Israel location filter no longer counts US locations that use the code `IL` for Illinois ("Chicago, IL", "US-IL-Remote"). A bare `IL` still counts as Israel for towns written "Caesarea, IL", and the dashboard and digest share the one matcher.
-- The browser crawler waits until a pagination click has changed the page before reading it, instead of a fixed 1.5 seconds, so slow pagers such as monday.com no longer stop early.
+- The browser crawler waits until a pagination click has produced new job links, instead of a fixed 1.5 seconds, so slow pagers such as monday.com no longer stop early, and a pager that empties the list before loading the next page does not end the crawl.
 
 ## [0.2.0] - 2026-11-14
 
