@@ -52,7 +52,7 @@ __CSS__
     <input class="field" type="search" id="q" placeholder="Search">
   </div>
 
-  <details class="more">
+  <details class="more" open>
     <summary>More filters</summary>
     <div class="more-body">
       <label>Company <select class="field" id="company"><option value="">All companies</option></select></label>
@@ -68,11 +68,16 @@ __CSS__
     </div>
   </details>
 
-  <details class="gaps notice" id="gaps" hidden><summary id="gaps-title">Coverage gaps</summary></details>
-
   <noscript><p class="notice">The list needs JavaScript. Every open role is also in the JSON-LD block and the #data script of this page.</p></noscript>
   <ul class="feed" id="list" aria-label="Open roles"></ul>
-  <button type="button" class="btn btn-pill page-end" id="more" hidden>Show more</button>
+  <nav class="pager" id="pager" aria-label="Pagination" hidden>
+    <button type="button" class="btn btn-pill" id="prev">Previous</button>
+    <span id="pageInfo" aria-live="polite"></span>
+    <button type="button" class="btn btn-pill" id="next">Next</button>
+    <label class="pager-size">Per page <select class="field" id="size"><option>25</option><option>50</option><option>100</option></select></label>
+  </nav>
+
+  <details class="gaps notice" id="gaps" hidden><summary id="gaps-title">Coverage gaps</summary></details>
 </main>
 <p class="foot">Discards are saved in this browser only. Data updated <span id="upd"></span>.</p>
 </div>
@@ -81,7 +86,7 @@ __CSS__
 <script>
 (function(){
 var DATA=JSON.parse(document.getElementById('data').textContent);
-var JOBS=DATA.jobs,PAGE=40,shown=PAGE;
+var JOBS=DATA.jobs,page=0;
 var $=function(id){return document.getElementById(id)};
 var LS_D='il-jobs-discarded-v1',LS_F='il-jobs-filters-v1',LS_T='misra-theme';
 var CATS={pm:'product',junior:'junior',other:'other'};
@@ -89,7 +94,7 @@ var KIND={pm:'Product',junior:'Intern / junior',other:'Other'};
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var gone=lsGet(LS_D,{});
-function defaults(){return {q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false,hideStale:false}}
+function defaults(){return {q:'',company:'',loc:'il',sort:'new',cats:[],onlyNew:false,showGone:false,hideStale:false,size:25}}
 var F=Object.assign(defaults(),lsGet(LS_F,{}));
 function key(j){return j.c+'|'+j.i}
 function h(tag,attrs,kids){
@@ -173,14 +178,19 @@ function render(focusIdx){
   $('summary').textContent='Showing '+res.length+' of '+open+' open roles in Israel. '+goneN+' discarded.';
   renderStories();
   var ul=$('list');
-  if(!res.length){ul.replaceChildren(h('li',{class:'empty',text:'No roles match these filters.'}));$('more').hidden=true;return}
-  ul.replaceChildren.apply(ul,res.slice(0,shown).map(cardEl));
-  $('more').hidden=res.length<=shown;
-  if(!$('more').hidden)$('more').textContent='Show '+(res.length-shown)+' more';
+  if(!res.length){ul.replaceChildren(h('li',{class:'empty',text:'No roles match these filters.'}));$('pager').hidden=true;return}
+  var size=[25,50,100].indexOf(+F.size)>=0?+F.size:25,pages=Math.ceil(res.length/size);
+  page=Math.min(page,pages-1);
+  ul.replaceChildren.apply(ul,res.slice(page*size,(page+1)*size).map(cardEl));
+  $('pager').hidden=res.length<=25;
+  $('size').value=size;
+  $('prev').disabled=page===0;
+  $('next').disabled=page>=pages-1;
+  $('pageInfo').textContent='Page '+(page+1)+' of '+pages;
   if(focusIdx!==undefined){var bs=ul.querySelectorAll('[data-act]');var b=bs[Math.min(focusIdx,bs.length-1)];if(b)b.focus()}}
 
 function save(){lsSet(LS_F,F)}
-function upd(){shown=PAGE;save();sync();render()}
+function upd(){page=0;save();sync();render()}
 
 $('q').addEventListener('input',function(){F.q=this.value;upd()});
 $('company').addEventListener('change',function(){F.company=this.value;upd()});
@@ -196,7 +206,10 @@ document.querySelectorAll('.chip[data-cat]').forEach(function(b){b.addEventListe
   upd()})});
 $('stories').addEventListener('click',function(e){var b=e.target.closest('.story');if(!b)return;F.company=F.company===b.dataset.company?'':b.dataset.company;upd()});
 $('reset').addEventListener('click',function(){F=defaults();upd()});
-$('more').addEventListener('click',function(){shown+=PAGE;render()});
+$('size').addEventListener('change',function(){F.size=+this.value;upd()});
+function go(d){page+=d;render();$('list').scrollIntoView()}
+$('prev').addEventListener('click',function(){go(-1)});
+$('next').addEventListener('click',function(){go(1)});
 function setGone(k,on){if(on)gone[k]=TODAY;else delete gone[k];lsSet(LS_D,gone)}
 $('list').addEventListener('click',function(e){
   var b=e.target.closest('[data-act="toggle"]');if(!b)return;
