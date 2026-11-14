@@ -1995,5 +1995,60 @@
   "n_jobs": 818,
   "n_israel": 25,
   "israel_only": true
+ },
+ {
+  "name": "CropX",
+  "domain": "cropx.com",
+  "careers_url": "",
+  "ats": "workable",
+  "slug": "cropx",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Capitolis",
+  "domain": "capitolis.com",
+  "careers_url": "",
+  "ats": "greenhouse",
+  "slug": "capitolis",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 0,
+  "n_israel": 0
+ },
+ {
+  "name": "Torii",
+  "domain": "toriihq.com",
+  "careers_url": "",
+  "ats": "greenhouse",
+  "slug": "toriihq",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 0,
+  "n_israel": 0
+ },
+ {
+  "name": "Hunters",
+  "domain": "hunters.security",
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "hunters/67.007",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 0,
+  "n_israel": 0
+ },
+ {
+  "name": "Explorium",
+  "domain": "explorium.ai",
+  "careers_url": "",
+  "ats": "comeet",
+  "slug": "explorium/B4.00E",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": 0,
+  "n_israel": 0
  }
 ]
