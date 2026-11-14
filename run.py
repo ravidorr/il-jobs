@@ -12,9 +12,10 @@ from browser_crawl import WHY, crawl_many
 from discover import ISRAEL
 
 DB = "data/jobs.db"
-DROP_MIN_OPEN = 10  # a company with fewer open jobs swings too much from day to day to judge a drop
-DROP_HOLD_RUNS = 3  # a sharp drop is held for this many runs in a row, then believed
-DROP_NOTE = "sharp drop"
+DROP_MIN_OPEN = 10  # a company with fewer open jobs swings too much to judge a drop
+DROP_HOLD_DAYS = 3  # a sharp drop is held on this many days in a row; the next day believes it
+DROP_NOTE = "sharp drop"  # crawl log note prefix of a held crawl
+DROP_BELIEVED = f"drop believed after {DROP_HOLD_DAYS} held days"
 
 
 def init() -> sqlite3.Connection:
@@ -31,19 +32,35 @@ def init() -> sqlite3.Connection:
     return c
 
 
-def sharp_drop(c: sqlite3.Connection, name: str, n: int) -> str:
-    """A crawl log note when a browser crawl returned under half the jobs open before, else an empty string.
+def sharp_drop(c: sqlite3.Connection, name: str, n: int, today: str) -> tuple[str, bool]:
+    """(crawl log note, held) for a browser crawl that returned n jobs. No note when it is not a sharp drop.
 
-    A site that starts paginating or capping its list looks like a company that closed most of its jobs. The caller
-    then treats the crawl as failed, so the jobs stay open. After DROP_HOLD_RUNS held runs in a row the drop is real."""
+    A sharp drop is fewer than half the jobs open before. A site that starts paginating or capping its list looks
+    like a company that closed most of its jobs, so the crawl is held: its jobs are recorded but nothing closes. The
+    drop is believed on the next day once the company was held on each of the last DROP_HOLD_DAYS earlier days (a
+    run that failed another way in between starts the count again). Runs on `today` do not count, so re-running the
+    pipeline within a day cannot use up the hold."""
     prev = c.execute("SELECT COUNT(*) FROM jobs WHERE company=? AND status='open'", (name,)).fetchone()[0]
     if prev < DROP_MIN_OPEN or n * 2 >= prev:
-        return ""
-    recent = c.execute("SELECT note FROM crawl_log WHERE company=? ORDER BY ts DESC LIMIT ?", (name, DROP_HOLD_RUNS))
-    notes = [note or "" for (note,) in recent]
-    if len(notes) == DROP_HOLD_RUNS and all(note.startswith(DROP_NOTE) for note in notes):
-        return ""
-    return f"{DROP_NOTE}: got {n}, {prev} open before"
+        return "", False
+    rows = c.execute(
+        "SELECT substr(ts,1,10), note FROM crawl_log WHERE company=? AND substr(ts,1,10) < ? ORDER BY ts DESC",
+        (name, today),
+    )
+    held_by_day: dict[str, bool] = {}
+    for day, note in rows:
+        held_by_day.setdefault(day, (note or "").startswith(DROP_NOTE))  # the day's last run
+    recent = list(held_by_day.values())[:DROP_HOLD_DAYS]
+    detail = f"got {n}, {prev} open before"
+    if len(recent) == DROP_HOLD_DAYS and all(recent):
+        return f"{DROP_BELIEVED}: {detail}", False
+    return f"{DROP_NOTE}: {detail}", True
+
+
+def close_unseen(c: sqlite3.Connection, name: str, seen: set[str]) -> None:
+    for (jid,) in c.execute("SELECT job_id FROM jobs WHERE company=? AND status='open'", (name,)).fetchall():
+        if jid not in seen:
+            c.execute("UPDATE jobs SET status='closed' WHERE company=? AND job_id=?", (name, jid))
 
 
 def crawl(co: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]] | None]:
@@ -77,23 +94,25 @@ def main() -> None:  # noqa: PLR0912
         jobs = fetched
         if fetched is not None and co.get("israel_only"):  # large multinational boards: keep Israel jobs only
             jobs = [j for j in fetched if ISRAEL.search(j["location"] or "")]
-        if jobs is not None and co["ats"] == "browser":
-            drop = sharp_drop(c, name, len(jobs))
-            if drop:
-                WHY[co["slug"]] = drop
-                jobs = None  # do not close jobs on a crawl that probably lost most of the list
-        note = ""
+        drop, held = (
+            sharp_drop(c, name, len(jobs), now[:10]) if jobs is not None and co["ats"] == "browser" else ("", False)
+        )
+        if drop:
+            WHY[co["slug"]] = drop
+        note = drop
         if jobs is None:
             note = WHY.get(co["slug"], "request failed")
         elif not jobs and co["ats"] == "browser":
             note = WHY.get(co["slug"], "")
         c.execute(
             "INSERT INTO crawl_log(ts,company,ats,ok,n_jobs,note) VALUES(?,?,?,?,?,?)",
-            (now, name, co["ats"], jobs is not None, len(jobs or []), note),
+            (now, name, co["ats"], jobs is not None and not held, len(jobs or []), note),
         )
         if jobs is None:
             failed.append(name)  # never close jobs when the crawl failed
             continue
+        if held:
+            failed.append(name)  # a crawl that probably lost most of the list: record what it saw, close nothing
         seen: set[str] = set()
         known = c.execute("SELECT COUNT(*) FROM jobs WHERE company=?", (name,)).fetchone()[0]
         for j in jobs:
@@ -124,9 +143,8 @@ def main() -> None:  # noqa: PLR0912
                         0 if known else 1,
                     ),
                 )
-        for (jid,) in c.execute("SELECT job_id FROM jobs WHERE company=? AND status='open'", (name,)).fetchall():
-            if jid not in seen:
-                c.execute("UPDATE jobs SET status='closed' WHERE company=? AND job_id=?", (name, jid))
+        if not held:
+            close_unseen(c, name, seen)
     c.commit()
     n_open = c.execute("SELECT COUNT(*) FROM jobs WHERE status='open'").fetchone()[0]
     print(f"crawled {len(companies)} companies, failed {len(failed)} {failed}, open jobs {n_open}")
