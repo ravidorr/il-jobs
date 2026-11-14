@@ -11,6 +11,9 @@ _s.headers["User-Agent"] = UA
 _last: dict[str, float] = {}
 _lock = threading.Lock()
 DELAY = 1.0  # seconds between requests to the same host
+DROP_HOLD_DAYS = 3  # a sharp drop in a browser crawl is held on this many days in a row; the next day believes it
+DROP_NOTE = "sharp drop"  # crawl log note prefix of a held crawl
+DROP_BELIEVED = f"drop believed after {DROP_HOLD_DAYS} held days"  # note prefix of the crawl that believed one
 
 
 def get(url: str, **kw: Any) -> requests.Response | None:

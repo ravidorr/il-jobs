@@ -2,6 +2,14 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.9] - 2026-11-14
+
+### Added
+
+- The digest email now ends with the companies that were not crawled properly: those whose last two crawls failed (blocked pages, HTTP errors), whose last crawl was held as a sharp drop, or whose jobs were closed after a sharp drop was believed. Each says why and when the last good crawl was. A company not crawled in the last 7 days is left out.
+- On a day with no new jobs, an email still goes out ("Job crawl alert") when a gap has not been in an email yet. An outage alerts once, whether it is failing or held, and an alert whose email failed is sent the next day: the database remembers which gaps an email carried, and records it only after a successful send. A gap that was already emailed still appears in the footer of later digests.
+- A problem in the coverage check never stops the job email: the jobs go out with a note that the check failed, and the workflow step fails afterwards so it is noticed (with no jobs to send, the failed step and the log are the only signs).
+
 ## [0.2.8] - 2026-11-14
 
 ### Fixed

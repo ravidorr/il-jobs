@@ -9,13 +9,11 @@ from typing import Any
 
 from adapters import ADAPTERS
 from browser_crawl import WHY, crawl_many
+from common import DROP_BELIEVED, DROP_HOLD_DAYS, DROP_NOTE
 from discover import ISRAEL
 
 DB = "data/jobs.db"
 DROP_MIN_OPEN = 10  # fewer open jobs swing too much to judge a drop; this many returning nothing is a broken page
-DROP_HOLD_DAYS = 3  # a sharp drop is held on this many days in a row; the next day believes it
-DROP_NOTE = "sharp drop"  # crawl log note prefix of a held crawl
-DROP_BELIEVED = f"drop believed after {DROP_HOLD_DAYS} held days"
 
 
 def init() -> sqlite3.Connection:
