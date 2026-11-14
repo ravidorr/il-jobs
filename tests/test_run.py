@@ -1,5 +1,7 @@
 import runpy
 import sqlite3
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -129,6 +131,262 @@ def test_main_israel_only_keeps_israel_jobs(workdir: Path, adapter: dict[str, An
     logged = dict(check.execute("SELECT company, n_jobs FROM crawl_log"))
     assert logged["Big"] == 2 + 0
     check.close()
+
+
+BIG = co("Big", ats="browser", slug="https://big")
+OPEN = 20
+ISRAEL_OPEN = 12
+API_KEPT = 2
+RETURNED = 5
+HELD_RUNS = run.DROP_HOLD_DAYS
+
+
+@pytest.fixture(autouse=True)
+def fresh_why(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One crawl-reason dict for the test, shared by run and browser_crawl so no reason leaks between tests."""
+    why: dict[str, str] = {}
+    monkeypatch.setattr(run, "WHY", why)
+    monkeypatch.setattr(browser_crawl, "WHY", why)
+
+
+@pytest.fixture
+def day(monkeypatch: pytest.MonkeyPatch) -> Callable[[int], None]:
+    """Pick the date main() stamps its crawl log rows with: day(3) is 2025-03-03."""
+
+    def set_day(n: int) -> None:
+        monkeypatch.setattr(run.time, "strftime", lambda _fmt: f"2025-03-{n:02d}T12:00:00")
+
+    return set_day
+
+
+def seed_open(conn: sqlite3.Connection, name: str, count: int, **kw: Any) -> None:
+    for i in range(count):
+        add_job(conn, name, f"j{i}", f"Job {i}", **kw)
+
+
+def seed(name: str = "Big", count: int = OPEN, **kw: Any) -> None:
+    conn = run.init()
+    seed_open(conn, name, count, **kw)
+    conn.commit()
+    conn.close()
+
+
+def held_note(n: int = RETURNED, prev: int = OPEN) -> str:
+    return f"{run.DROP_NOTE}: got {n}, {prev} open before"
+
+
+def log_runs(name: str, notes: list[str | None], date: str = "2024-01-{:02d}") -> None:
+    """Earlier crawl log rows for a company, oldest first, one per day (or all on one day)."""
+    conn = run.init()
+    for i, note in enumerate(notes, start=1):
+        conn.execute(
+            "INSERT INTO crawl_log(ts,company,ats,ok,n_jobs,note) VALUES(?,?,?,?,?,?)",
+            (f"{date.format(i)}T00:00:00" if "{" in date else f"{date}T00:00:{i:02d}", name, "browser", 0, 0, note),
+        )
+    conn.commit()
+    conn.close()
+
+
+def crawl(workdir: Path, monkeypatch: pytest.MonkeyPatch, jobs: list[Any], company: dict[str, Any] = BIG) -> None:
+    write_json(workdir / "data" / "companies.json", [company])
+    monkeypatch.setattr(run, "crawl_many", lambda urls: dict.fromkeys(urls, jobs))
+    run.main()
+
+
+def returned(count: int) -> list[dict[str, str]]:
+    return [job(f"j{i}") for i in range(count)]
+
+
+def open_jobs(name: str = "Big") -> int:
+    check = sqlite3.connect(run.DB)
+    count: int = check.execute("SELECT COUNT(*) FROM jobs WHERE company=? AND status='open'", (name,)).fetchone()[0]
+    check.close()
+    return count
+
+
+def last_log(name: str = "Big") -> tuple[int, int, str]:
+    check = sqlite3.connect(run.DB)
+    row: tuple[int, int, str] = check.execute(
+        "SELECT ok, n_jobs, note FROM crawl_log WHERE company=? ORDER BY ts DESC LIMIT 1", (name,)
+    ).fetchone()
+    check.close()
+    return row
+
+
+def test_sharp_drop_keeps_jobs_open_records_new_ones_and_says_why(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    seed()
+    crawl(workdir, monkeypatch, [*returned(RETURNED), job("brand-new")])
+    assert open_jobs() == OPEN + 1  # nothing closed, and the new job the partial crawl did see is recorded
+    check = sqlite3.connect(run.DB)
+    assert check.execute("SELECT reported FROM jobs WHERE job_id='brand-new'").fetchone() == (0,)  # for the digest
+    check.close()
+    assert last_log() == (0, RETURNED + 1, held_note(RETURNED + 1))  # logged as a failed crawl, with the reason
+    out = capsys.readouterr().out
+    assert "failed 1 ['Big']" in out
+    assert f"FAILED  <- {held_note(RETURNED + 1)}" in out
+
+
+@pytest.mark.parametrize(
+    ("open_before", "count", "open_after"),
+    [(20, 9, 20), (20, 10, 10), (21, 10, 21), (21, 11, 11)],  # under half is held, half or more is believed
+)
+def test_sharp_drop_is_under_half(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, open_before: int, count: int, open_after: int
+) -> None:
+    seed(count=open_before)
+    crawl(workdir, monkeypatch, returned(count))
+    assert open_jobs() == open_after
+
+
+@pytest.mark.parametrize(
+    ("open_before", "open_after"), [(run.DROP_MIN_OPEN - 1, 1), (run.DROP_MIN_OPEN, run.DROP_MIN_OPEN)]
+)
+def test_small_companies_are_not_judged_on_a_drop(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, open_before: int, open_after: int
+) -> None:
+    seed(count=open_before)
+    crawl(workdir, monkeypatch, returned(1))
+    assert open_jobs() == open_after
+
+
+@pytest.mark.parametrize(
+    ("open_before", "count", "open_after"),
+    [(run.DROP_MIN_OPEN - 5, 1, 1), (run.DROP_MIN_OPEN, 4, run.DROP_MIN_OPEN)],
+)
+def test_closed_jobs_do_not_count_as_open_before(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, open_before: int, count: int, open_after: int
+) -> None:
+    seed(count=open_before)
+    conn = run.init()
+    for i in range(30):  # a long history of closed jobs must not make a small company look big
+        add_job(conn, "Big", f"closed{i}", "Closed", status="closed")
+    conn.commit()
+    conn.close()
+    crawl(workdir, monkeypatch, returned(count))
+    assert open_jobs() == open_after  # 5 open: believed. 10 open and 4 back: held, as without the closed rows
+
+
+def test_the_first_crawl_of_a_company_is_a_silent_baseline(workdir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    crawl(workdir, monkeypatch, returned(OPEN))
+    assert open_jobs() == OPEN
+    assert last_log() == (1, OPEN, "")
+
+
+@pytest.mark.parametrize(
+    ("earlier", "open_after"),
+    [
+        ([held_note()] * (HELD_RUNS - 1), OPEN),  # held two days: held again
+        ([held_note()] * HELD_RUNS, RETURNED),  # held three days in a row: believed
+        ([held_note(), "", held_note()], OPEN),  # a day in between that was not held starts the count again
+        ([held_note(), None, held_note()], OPEN),  # a log row with no note was not held
+        ([held_note(), "request failed", held_note()], OPEN),  # a crawl that failed another way, too
+        ([held_note(), "no jobs found, title='x'", held_note()], OPEN),
+        (["request failed", *[held_note()] * HELD_RUNS], RETURNED),  # only the latest days matter
+    ],
+)
+def test_a_sharp_drop_is_believed_after_three_held_days(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, earlier: list[str | None], open_after: int
+) -> None:
+    seed()
+    log_runs("Big", earlier)
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    assert open_jobs() == open_after
+
+
+def test_runs_within_a_day_do_not_use_up_the_hold(workdir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    seed()
+    log_runs("Big", [held_note()] * (HELD_RUNS + 2), date="2024-01-05")  # five held runs, all on one day
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    assert open_jobs() == OPEN
+    today = time.strftime("%Y-%m-%d")
+    conn = run.init()
+    conn.execute("DELETE FROM crawl_log WHERE company='Big'")  # held runs earlier today are ignored too
+    conn.commit()
+    conn.close()
+    log_runs("Big", [held_note()] * HELD_RUNS, date=today)
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    assert open_jobs() == OPEN
+
+
+def test_a_persistent_drop_is_held_three_days_then_believed_and_logged(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None], capsys: pytest.CaptureFixture[str]
+) -> None:
+    seed()
+    for n in range(1, HELD_RUNS + 1):
+        day(n)
+        crawl(workdir, monkeypatch, returned(RETURNED))
+        assert open_jobs() == OPEN, f"day {n} is held"
+        assert last_log() == (0, RETURNED, held_note())
+    capsys.readouterr()
+    day(HELD_RUNS + 1)
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    believed = f"{run.DROP_BELIEVED}: got {RETURNED}, {OPEN} open before"
+    assert open_jobs() == RETURNED  # the fourth day believes it
+    assert last_log() == (1, RETURNED, believed)  # a successful crawl, and the log says what happened
+    out = capsys.readouterr().out
+    assert f"browser Big             {RETURNED}  <- {believed}" in out
+    day(HELD_RUNS + 2)
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    assert last_log() == (1, RETURNED, "")  # back to normal: nothing left to judge
+
+
+def test_the_same_drop_on_one_day_is_held_however_often_it_runs(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, day: Callable[[int], None]
+) -> None:
+    seed()
+    day(1)
+    for _ in range(HELD_RUNS + 1):
+        crawl(workdir, monkeypatch, returned(RETURNED))
+    day(2)
+    crawl(workdir, monkeypatch, returned(RETURNED))
+    assert open_jobs() == OPEN  # one earlier day is held, not three
+
+
+def test_an_empty_result_with_history_is_never_a_sharp_drop(workdir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    seed()
+    log_runs("Big", ["empty page"] * HELD_RUNS)
+    crawl(workdir, monkeypatch, [])
+    assert open_jobs() == OPEN  # held for good: the existing empty-page guard has no way out
+    ok, count, note = last_log()
+    assert (ok, count) == (0, 0)
+    assert not note.startswith(run.DROP_NOTE)
+
+
+def test_one_held_company_does_not_hold_another(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    seed("Big")
+    seed("Fine")
+    write_json(workdir / "data" / "companies.json", [BIG, co("Fine", ats="browser", slug="https://fine")])
+    crawled = {"https://big": returned(RETURNED), "https://fine": returned(OPEN - 1)}
+    monkeypatch.setattr(run, "crawl_many", lambda urls: {u: crawled[u] for u in urls})
+    run.main()
+    assert (open_jobs("Big"), open_jobs("Fine")) == (OPEN, OPEN - 1)  # Fine closed its one job as usual
+    out = capsys.readouterr().out
+    assert "failed 1 ['Big']" in out
+    assert f"browser Fine            {OPEN - 1}" in out
+    assert "FAILED" in out.split("browser Big")[1].split("\n")[0]
+
+
+def test_sharp_drop_counts_israel_jobs_for_an_israel_only_company(
+    workdir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seed(count=ISRAEL_OPEN, location="Tel Aviv, Israel")
+    israel = [{**job(f"j{i}"), "location": "Haifa, Israel"} for i in range(3)]
+    abroad = [{**job(f"a{i}"), "location": "Austin, TX"} for i in range(100)]
+    crawl(workdir, monkeypatch, israel + abroad, {**BIG, "israel_only": True})
+    assert open_jobs() == ISRAEL_OPEN  # 103 jobs came back, but only 3 are Israel jobs and 12 were open
+    assert last_log()[2] == held_note(3, ISRAEL_OPEN)
+
+
+def test_a_drop_in_an_api_company_is_still_believed(workdir: Path, adapter: dict[str, Any]) -> None:
+    seed("Api")
+    write_json(workdir / "data" / "companies.json", [co("Api")])
+    adapter["api"] = [[job("j0"), job("j1")]]
+    run.main()
+    assert open_jobs("Api") == API_KEPT  # API feeds are complete lists: only browser crawls are held back
 
 
 def test_main_without_companies_as_script(workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
