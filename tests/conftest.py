@@ -43,10 +43,14 @@ def db(workdir: Path) -> sqlite3.Connection:
 
 
 def add_crawls(
-    conn: sqlite3.Connection, company: str, rows: list[tuple[int, str | None]], ats: str = "browser"
+    conn: sqlite3.Connection,
+    company: str,
+    rows: list[tuple[int, str | None]],
+    ats: str = "browser",
+    start_day: int = 1,
 ) -> None:
-    """Crawl log rows for a company, oldest first, one per day: (ok, note)."""
-    for day, (ok, note) in enumerate(rows, start=1):
+    """Crawl log rows for a company, oldest first, one per day from 2026-01-<start_day>: (ok, note)."""
+    for day, (ok, note) in enumerate(rows, start=start_day):
         conn.execute(
             "INSERT INTO crawl_log(ts,company,ats,ok,n_jobs,note) VALUES(?,?,?,?,?,?)",
             (f"2026-01-{day:02d}T06:00:00", company, ats, ok, 0 if not ok else 5, note),
