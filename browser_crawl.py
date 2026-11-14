@@ -66,24 +66,43 @@ UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 HTTP_OK = 200
 HTTP_ERROR = 400
 CARD_MAX = 600  # the card script never climbs to an ancestor with more text than this
-CARD_JS = """(els, src) => {
-    const re = new RegExp(src, 'i');
-    const button = /^(apply|view|read|learn|see|more|details|save|share)\\b/i;
-    const jobs = n => new Set([...n.querySelectorAll('a[href]')].filter(a => {
-        const t = (a.innerText || '').trim();
-        return re.test(a.href) && t && !button.test(t);
-    }).map(a => a.href)).size;
+CARD_JS = r"""(els, cfg) => {
+    const job = new RegExp(cfg.job, 'i'), skip = new RegExp(cfg.skip, 'i'), id = new RegExp(cfg.id, 'i');
+    const button = /^(apply|view|read|learn|see|more|details|save|share)\b/i;
+    const href = a => (typeof a.href === 'string' ? a.href : '');
+    const key = h => {
+        const m = id.exec(h);
+        return h.split('?')[0].replace(/\/+$/, '') + (m ? '?' + m[1] : '');
+    };
+    const text = n => (n.innerText || '').trim();
+    const many = n => {  // does n hold the title links of two or more jobs?
+        const seen = new Set();
+        for (const a of n.querySelectorAll('a[href]')) {
+            const h = href(a), t = text(a);
+            if (job.test(h) && !skip.test(h) && t && !button.test(t)) {
+                seen.add(key(h));
+                if (seen.size > 1) return true;
+            }
+        }
+        return false;
+    };
     return els.map(e => {
         let n = e;
         for (let i = 0; i < 4 && n.parentElement; i++) {
             const up = n.parentElement;
-            if (jobs(up) > 1 || up.innerText.length > 600) break;
+            if ((up.innerText || '').length > cfg.max || many(up)) break;
             n = up;
         }
-        return [e.href, (e.innerText || '').trim(), (n.innerText || '').trim().slice(0, 601)];
+        return [href(e), text(e), text(n).slice(0, cfg.max + 1)];
     });
-}"""  # the card is the widest ancestor with one job's title link (not its Apply button) and a card's worth of text
+}"""  # the card: the widest ancestor, up to 4 levels, with one job's title link and a card's worth of text
+CARD_ARGS = {"job": JOBLINK.pattern, "skip": NOT_JOB.pattern, "id": JOB_ID.pattern, "max": CARD_MAX}
 CARD_LINE_MAX = 120  # a longer card line is a job description, not a title, place or team
+CARD_BEFORE = 2  # lines above the title that can still be its place or team
+CARD_AFTER = 3  # and below it
+CARD_CHROME = frozenset({"save job", "share job", "apply", "apply now"})
+BUTTON_LINES = frozenset({"view position", "view role", "view job", "view full details", "learn more", "read more"})
+LINK_NOISE = CARD_CHROME | BUTTON_LINES | {"location", "location:", "department"}
 
 WHY: dict[str, str] = {}  # url -> reason, filled for failed or empty crawls, printed by run.py
 
@@ -177,6 +196,20 @@ def _parse_card(lines: list[str]) -> tuple[str, str, str] | None:
     if places:
         return title[:140], " | ".join(places)[:100], others[0] if others else ""
     return title[:140], " | ".join(others[:2])[:100], ""
+
+
+def _card_extras(card: str, title: str) -> list[str]:
+    """The lines of a job card around its title that can hold the place and team, in the order the card prints
+    them: up to two above the title and three below. A card can reach up to headings and badges that sit further
+    away, so a window keeps them out while `_parse_card` still finds the place wherever it is printed."""
+    low = title.lower()
+    lines = [ln.strip() for ln in card.split("\n")]
+    lines = [ln for ln in lines if ln and len(ln) <= CARD_LINE_MAX and ln.lower() not in CARD_CHROME | BUTTON_LINES]
+    at = next((i for i, ln in enumerate(lines) if ln.lower() == low), None)
+    if at is None:
+        return lines[:2]
+    after = [ln for ln in lines[at + 1 :] if ln.lower() != low]
+    return [*lines[max(0, at - CARD_BEFORE) : at], *after[:CARD_AFTER]]
 
 
 def _job_key(href: str) -> str:
@@ -333,18 +366,13 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
             async def collect() -> int:
                 nonlocal link_count
                 found = 0
-                links = await page.eval_on_selector_all("a[href]", CARD_JS, JOBLINK.pattern)
+                links = await page.eval_on_selector_all("a[href]", CARD_JS, CARD_ARGS)
                 link_count = len(links)
                 for href, text, card in links:
                     key = _job_key(href)
                     if not text or key in seen or not JOBLINK.search(href) or NOT_JOB.search(href):
                         continue
-                    lines = [
-                        ln.strip()
-                        for ln in text.split("\n")
-                        if ln.strip()
-                        and ln.strip().lower() not in ("location", "location:", "department", "apply", "apply now")
-                    ]
+                    lines = [ln.strip() for ln in text.split("\n") if ln.strip().lower() not in LINK_NOISE | {""}]
                     if not lines:
                         continue
                     if lines[0].lower() in LANGS:
@@ -352,15 +380,7 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                     if (
                         len(lines) == 1 and 0 < len(card) <= CARD_MAX
                     ):  # bare title link: location sits in the surrounding card
-                        cl = [
-                            ln.strip()
-                            for ln in card.split("\n")
-                            if ln.strip()
-                            and len(ln.strip()) <= CARD_LINE_MAX
-                            and ln.strip().lower()
-                            not in ("save job", "share job", "apply", "apply now", lines[0].lower())
-                        ]
-                        lines = [lines[0], *cl[:2]]
+                        lines = [lines[0], *_card_extras(card, lines[0])]
                     parsed = _parse_card(lines)
                     if parsed is None:
                         continue
