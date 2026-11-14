@@ -12,7 +12,10 @@ from playwright.async_api import async_playwright
 
 from discover import ISRAEL
 
-JOBLINK = re.compile(r"/(jobs?|positions?|careers?|openings?|vacanc\w+|job-?post\w*)/[^/?#]{4,}", re.I)
+JOBLINK = re.compile(
+    r"/(jobs?|positions?|careers?|openings?|vacanc\w+|job-?post\w*)/[^/?#]{4,}|[?&]job_id=[^&#]+", re.I
+)
+JOB_ID = re.compile(r"[?&](job_id=[^&#]+)", re.I)  # Tower: /job-description/?job_id=9672, the query is the job
 NOT_JOB = re.compile(
     r"/(department|departments|category|team|teams|locations?|working-at|life-at|benefits|students?|early-careers?|login|search|saved|talent-network)\b|#",
     re.I,
@@ -141,12 +144,12 @@ def _is_location(line: str) -> bool:
 def _parse_card(lines: list[str]) -> tuple[str, str, str] | None:
     """Title, location and team from the text lines of a job card, in whatever order the site prints them
     ([location, title, type], [team, title, location], [title, location]). None when there is no title."""
-    # split "title<tabs>location" and "Cyprus · Full-time" into their parts, and collapse padding
-    parts = [p for ln in lines for p in re.split(r"\t{2,}|\s+·\s+", ln)]
+    # split table cells ("title<tab>team") and "Cyprus · Full-time" into their parts, and collapse padding
+    parts = [p for ln in lines for p in re.split(r"\t+|\s+·\s+", ln)]
     lines = [" ".join(p.split()) for p in parts]
     lines = [ln for ln in lines if ln and ln.lower() not in CARD_NOISE]
-    places = [ln for ln in lines if _is_location(ln)]
-    rest = [ln for ln in lines if ln not in places]
+    places = list(dict.fromkeys(ln for ln in lines if _is_location(ln)))
+    rest = list(dict.fromkeys(ln for ln in lines if ln not in places))  # a table row repeats its title cell
     if not rest:
         return None
     title, others = rest[0], rest[1:]
@@ -156,6 +159,13 @@ def _parse_card(lines: list[str]) -> tuple[str, str, str] | None:
     if places:
         return title[:140], " | ".join(places)[:100], others[0] if others else ""
     return title[:140], " | ".join(others[:2])[:100], ""
+
+
+def _job_key(href: str) -> str:
+    """The link without tracking parameters, but keeping a job_id query: there it is the only thing naming the job."""
+    key = href.split("?", maxsplit=1)[0].rstrip("/")
+    m = JOB_ID.search(href)
+    return f"{key}?job_id={m[1][len('job_id=') :]}" if m else key
 
 
 def _job(job_id: Any, title: Any, location: Any, url: Any, team: Any = "") -> dict[str, Any]:
@@ -312,7 +322,7 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                 )
                 link_count = len(links)
                 for href, text, card in links:
-                    key = href.split("?")[0].rstrip("/")
+                    key = _job_key(href)
                     if not text or key in seen or not JOBLINK.search(href) or NOT_JOB.search(href):
                         continue
                     lines = [

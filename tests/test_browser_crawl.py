@@ -420,6 +420,17 @@ async def test_eightfold_ignores_responses_that_are_not_a_search_result() -> Non
             ("Enterprise Account Executive - East", "Boston, MA", ""),
         ),
         (["Product Engineer - IL " + "\t" * 6 + "Tel Aviv"], ("Product Engineer - IL", "Tel Aviv", "")),
+        # a table row: cells split by one tab, and the title cell printed twice (Tower)
+        (
+            ["Book Keeper", "Book Keeper\tCorporate", "Migdal Haemek, ISR"],
+            ("Book Keeper", "Migdal Haemek, ISR", "Corporate"),
+        ),
+        # a location cell printed twice, and a title with its place in the same row
+        (
+            ["Book Keeper", "Book Keeper\tCorporate", "Migdal Haemek, ISR", "Migdal Haemek, ISR"],
+            ("Book Keeper", "Migdal Haemek, ISR", "Corporate"),
+        ),
+        (["Book Keeper\tMigdal Haemek, ISR"], ("Book Keeper", "Migdal Haemek, ISR", "")),
         # titles that mention a town, a country code or one word are still titles
         (["Customer Engineer - Kiryat Gat"], ("Customer Engineer - Kiryat Gat", "", "")),
         (["Software Engineer, QA", "Haifa"], ("Software Engineer, QA", "Haifa", "")),
@@ -432,6 +443,67 @@ async def test_eightfold_ignores_responses_that_are_not_a_search_result() -> Non
 )
 def test_parse_card(lines: list[str], expected: tuple[str, str, str] | None) -> None:
     assert browser_crawl._parse_card(lines) == expected
+
+
+@pytest.mark.parametrize(
+    ("href", "key"),
+    [
+        ("https://x.test/jobs/pm-role?utm_source=a#top", "https://x.test/jobs/pm-role"),
+        ("https://x.test/jobs/pm-role/", "https://x.test/jobs/pm-role"),
+        ("https://x.test/job-description/?job_id=9672", "https://x.test/job-description?job_id=9672"),
+        ("https://x.test/job-description/?utm=a&JOB_ID=9672&x=1", "https://x.test/job-description?job_id=9672"),
+        ("https://x.test/job-description/?job_id=AB-123.4#apply", "https://x.test/job-description?job_id=AB-123.4"),
+        ("https://x.test/jd/?job_id=R-100", "https://x.test/jd?job_id=R-100"),
+        ("https://x.test/jd/?job_id=R-200", "https://x.test/jd?job_id=R-200"),
+    ],
+)
+def test_job_key_keeps_only_a_job_id_query(href: str, key: str) -> None:
+    assert browser_crawl._job_key(href) == key
+
+
+async def test_job_id_links_are_separate_jobs_and_apply_buttons_are_not() -> None:
+    """Tower: /job-description/?job_id=N, each job linked twice (title and Apply), one table row per job."""
+    row = "{t}\t{c}\t\nMigdal Haemek, ISR\t\nApply"
+    links = [
+        link("/job-description/?job_id=9794", "Book Keeper", row.format(t="Book Keeper", c="Corporate")),
+        link("/job-description/?job_id=9794", "Apply", row.format(t="Book Keeper", c="Corporate")),
+        link("/job-description/?job_id=9524", "Apply", row.format(t="Corporate Counsel", c="Corporate")),  # first
+        link("/job-description/?job_id=9524", "Corporate Counsel", row.format(t="Corporate Counsel", c="Corporate")),
+    ]
+    jobs = await run(FakePage(link_fn=lambda i: links if i == 1 else []))
+    assert jobs is not None
+    assert [(j["title"], j["location"], j["team"], j["job_id"], j["url"]) for j in jobs] == [
+        (
+            "Book Keeper",
+            "Migdal Haemek, ISR",
+            "Corporate",
+            "https://x.test/job-description?job_id=9794",
+            "https://x.test/job-description/?job_id=9794",
+        ),
+        (
+            "Corporate Counsel",
+            "Migdal Haemek, ISR",
+            "Corporate",
+            "https://x.test/job-description?job_id=9524",
+            "https://x.test/job-description/?job_id=9524",
+        ),
+    ]
+
+
+async def test_job_id_links_sit_beside_ordinary_job_links() -> None:
+    links = [
+        link("/jobs/pm-role?utm_source=a", "Product Manager\nHaifa"),
+        link("/jobs/pm-role/", "Product Manager again"),
+        link("/job-description/?job_id=1", "Designer\nTel Aviv"),
+        link("/job-description/?job_id=2", "Analyst\nTel Aviv"),
+    ]
+    jobs = await run(FakePage(link_fn=lambda i: links if i == 1 else []))
+    assert jobs is not None
+    assert {j["title"]: j["location"] for j in jobs} == {
+        "Product Manager": "Haifa",
+        "Designer": "Tel Aviv",
+        "Analyst": "Tel Aviv",
+    }
 
 
 async def test_cards_keep_their_title_whatever_the_line_order() -> None:

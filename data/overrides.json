@@ -585,5 +585,9 @@
  "Komodor": {
   "ats": "browser",
   "slug": "https://komodor.com/careers/"
+ },
+ "Tower Semiconductor": {
+  "ats": "browser",
+  "slug": "https://careers.towersemi.com/search-result/?q=&category=&location="
  }
 }
