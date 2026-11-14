@@ -2232,5 +2232,27 @@
   "status": "ok",
   "n_jobs": null,
   "n_israel": null
+ },
+ {
+  "name": "Intezer",
+  "domain": "intezer.com",
+  "careers_url": "https://intezer.com/careers",
+  "ats": "browser",
+  "slug": "https://intezer.com/careers",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
+ },
+ {
+  "name": "Weebit Nano",
+  "domain": "weebit-nano.com",
+  "careers_url": "https://www.weebit-nano.com/company/careers/",
+  "ats": "browser",
+  "slug": "https://www.weebit-nano.com/company/careers/",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
  }
 ]

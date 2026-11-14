@@ -65,7 +65,25 @@ UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 
 HTTP_OK = 200
 HTTP_ERROR = 400
-CARD_MAX = 250
+CARD_MAX = 600  # the card script never climbs to an ancestor with more text than this
+CARD_JS = """(els, src) => {
+    const re = new RegExp(src, 'i');
+    const button = /^(apply|view|read|learn|see|more|details|save|share)\\b/i;
+    const jobs = n => new Set([...n.querySelectorAll('a[href]')].filter(a => {
+        const t = (a.innerText || '').trim();
+        return re.test(a.href) && t && !button.test(t);
+    }).map(a => a.href)).size;
+    return els.map(e => {
+        let n = e;
+        for (let i = 0; i < 4 && n.parentElement; i++) {
+            const up = n.parentElement;
+            if (jobs(up) > 1 || up.innerText.length > 600) break;
+            n = up;
+        }
+        return [e.href, (e.innerText || '').trim(), (n.innerText || '').trim().slice(0, 601)];
+    });
+}"""  # the card is the widest ancestor with one job's title link (not its Apply button) and a card's worth of text
+CARD_LINE_MAX = 120  # a longer card line is a job description, not a title, place or team
 
 WHY: dict[str, str] = {}  # url -> reason, filled for failed or empty crawls, printed by run.py
 
@@ -315,11 +333,7 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
             async def collect() -> int:
                 nonlocal link_count
                 found = 0
-                links = await page.eval_on_selector_all(
-                    "a[href]",
-                    """els=>els.map(e=>{let n=e; for(let i=0;i<2&&n.parentElement;i++) n=n.parentElement;
-                    return [e.href,(e.innerText||'').trim(),(n.innerText||'').trim().slice(0,300)]})""",
-                )
+                links = await page.eval_on_selector_all("a[href]", CARD_JS, JOBLINK.pattern)
                 link_count = len(links)
                 for href, text, card in links:
                     key = _job_key(href)
@@ -336,12 +350,13 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                     if lines[0].lower() in LANGS:
                         continue
                     if (
-                        len(lines) == 1 and 0 < len(card) < CARD_MAX
+                        len(lines) == 1 and 0 < len(card) <= CARD_MAX
                     ):  # bare title link: location sits in the surrounding card
                         cl = [
                             ln.strip()
                             for ln in card.split("\n")
                             if ln.strip()
+                            and len(ln.strip()) <= CARD_LINE_MAX
                             and ln.strip().lower()
                             not in ("save job", "share job", "apply", "apply now", lines[0].lower())
                         ]

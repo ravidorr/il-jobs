@@ -13,6 +13,7 @@ SCROLL_CAP = 25
 TWO = 2
 THREE = 3
 FOUR = 4
+OLD_CARD_MAX = 250  # the card length limit before the crawler read whole cards
 
 
 @pytest.fixture(autouse=True)
@@ -150,6 +151,63 @@ async def test_collect_link_filters_and_titles() -> None:
         ("Second Title", "Jerusalem"),
         ("Workday Job", "Tel Aviv Israel"),
     ]
+
+
+async def crawl_cards(links: list[list[str]]) -> dict[str, tuple[str, str]]:
+    jobs = await run(FakePage(link_fn=lambda i: links if i == 1 else []))
+    assert jobs is not None
+    return {j["title"]: (j["location"], j["team"]) for j in jobs}
+
+
+async def test_card_script_receives_the_job_link_pattern() -> None:
+    seen: list[Any] = []
+
+    class Spy(FakePage):
+        async def eval_on_selector_all(self, selector: str, js: str, arg: Any = None) -> Any:
+            if js == browser_crawl.CARD_JS:
+                seen.append(arg)
+            return await super().eval_on_selector_all(selector, js, arg)
+
+    await run(Spy(link_fn=lambda _i: []))
+    assert seen == [browser_crawl.JOBLINK.pattern]
+
+
+async def test_list_item_card_gives_the_place_that_follows_the_title() -> None:
+    """Intezer: the title link sits in a list item with its place tags after it, in a flat list."""
+    links = [
+        link(
+            "/careers/senior-account-executive-dach",
+            "Senior Account Executive (DACH)",
+            "Senior Account Executive (DACH)\n\nRemote",
+        ),
+        link(
+            "/careers/csm-international",
+            "Customer Success Manager - International",
+            "Customer Success Manager - International\n\nIsrael\n\nTel-Aviv",
+        ),
+    ]
+    assert await crawl_cards(links) == {
+        "Senior Account Executive (DACH)": ("Remote", ""),
+        "Customer Success Manager - International": ("Israel | Tel-Aviv", ""),
+    }
+
+
+async def test_a_job_description_in_the_card_is_not_a_team_or_place() -> None:
+    """Weebit: title, place, a long brief, then a View Position button that links to the same job."""
+    brief = "Highly experienced, hands-on engineer to lead product engineering activities for advanced devices. " * 2
+    card = f"Senior Product Engineer\nIsrael, Hod HaSharon (Hybrid)\n\n{brief}\n\nView Position"
+    assert len(brief) > browser_crawl.CARD_LINE_MAX
+    assert len(card) > OLD_CARD_MAX
+    links = [
+        link("/job/senior-product-engineer/", "Senior Product Engineer", card),
+        link("/job/senior-product-engineer/", "View Position", card),
+    ]
+    assert await crawl_cards(links) == {"Senior Product Engineer": ("Israel, Hod HaSharon (Hybrid)", "")}
+
+
+async def test_a_card_longer_than_the_limit_is_not_one_job() -> None:
+    links = [link("/jobs/pm-role", "Product Manager", "Product Manager\nHaifa\n" + "x " * 300)]
+    assert await crawl_cards(links) == {"Product Manager": ("", "")}
 
 
 async def test_pagination_no_next() -> None:
