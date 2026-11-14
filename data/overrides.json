@@ -136,5 +136,361 @@
   "ats": "workable",
   "slug": "vayyar",
   "verify": false
+ },
+ "Torq": {
+  "ats": "greenhouse",
+  "slug": "torq"
+ },
+ "Cymulate": {
+  "ats": "greenhouse",
+  "slug": "cymulate"
+ },
+ "Apiiro": {
+  "ats": "greenhouse",
+  "slug": "apiiro"
+ },
+ "Sweet Security": {
+  "ats": "greenhouse",
+  "slug": "sweetsecurity"
+ },
+ "BigID": {
+  "ats": "greenhouse",
+  "slug": "bigid"
+ },
+ "SafeBreach": {
+  "ats": "greenhouse",
+  "slug": "safebreach"
+ },
+ "Guardz": {
+  "ats": "greenhouse",
+  "slug": "guardz"
+ },
+ "Lightrun": {
+  "ats": "greenhouse",
+  "slug": "lightrun"
+ },
+ "Unframe": {
+  "ats": "greenhouse",
+  "slug": "unframe"
+ },
+ "Aidoc": {
+  "ats": "greenhouse",
+  "slug": "aidocmedical"
+ },
+ "Semperis": {
+  "ats": "ashby",
+  "slug": "semperis"
+ },
+ "Zenity": {
+  "ats": "comeet",
+  "slug": "zenity/19.000"
+ },
+ "Legit Security": {
+  "ats": "comeet",
+  "slug": "legitsecurity.com/37.004"
+ },
+ "Reco": {
+  "ats": "comeet",
+  "slug": "reco/3A.00D"
+ },
+ "Cognyte": {
+  "ats": "comeet",
+  "slug": "cognyte/F2.009"
+ },
+ "Infinidat": {
+  "ats": "comeet",
+  "slug": "infinidat/D6.003"
+ },
+ "Incredibuild": {
+  "ats": "comeet",
+  "slug": "incredibuild/66.00F"
+ },
+ "Pentera": {
+  "ats": "comeet",
+  "slug": "pentera/C5.00D"
+ },
+ "Coralogix": {
+  "ats": "comeet",
+  "slug": "coralogix/06.004"
+ },
+ "Zero Networks": {
+  "ats": "comeet",
+  "slug": "zeronetworks/39.00F"
+ },
+ "Sentra": {
+  "ats": "comeet",
+  "slug": "sentra/87.00B"
+ },
+ "VAST Data": {
+  "ats": "comeet",
+  "slug": "vastdata/43.001"
+ },
+ "Cynet": {
+  "ats": "comeet",
+  "slug": "cynet/33.00D"
+ },
+ "Stream Security": {
+  "ats": "comeet",
+  "slug": "streamsecurity/39.008"
+ },
+ "Cycode": {
+  "ats": "comeet",
+  "slug": "cycode/A8.00D"
+ },
+ "KELA": {
+  "ats": "comeet",
+  "slug": "kela/2A.004"
+ },
+ "Upwind": {
+  "ats": "comeet",
+  "slug": "upwind/49.004"
+ },
+ "Nexar": {
+  "ats": "smartrecruiters",
+  "slug": "nexarinc"
+ },
+ "DriveNets": {
+  "ats": "browser",
+  "slug": "https://drivenets.com/careers/"
+ },
+ "Lightbits Labs": {
+  "ats": "browser",
+  "slug": "https://www.lightbitslabs.com/careers/"
+ },
+ "Bluevine": {
+  "ats": "greenhouse",
+  "slug": "bluevineisrael"
+ },
+ "Navan": {
+  "ats": "greenhouse",
+  "slug": "tripactions"
+ },
+ "Glassbox": {
+  "ats": "greenhouse",
+  "slug": "glassboxltd"
+ },
+ "Verifone": {
+  "ats": "greenhouse",
+  "slug": "verifone"
+ },
+ "Datarails": {
+  "ats": "greenhouse",
+  "slug": "datarails"
+ },
+ "Duda": {
+  "ats": "greenhouse",
+  "slug": "duda"
+ },
+ "Zynga": {
+  "ats": "greenhouse",
+  "slug": "zyngacareers"
+ },
+ "Wolt": {
+  "ats": "greenhouse",
+  "slug": "wolt"
+ },
+ "BioCatch": {
+  "ats": "lever",
+  "slug": "biocatch"
+ },
+ "Houzz": {
+  "ats": "lever",
+  "slug": "houzz"
+ },
+ "Tonkean": {
+  "ats": "lever",
+  "slug": "tonkean"
+ },
+ "Nexxen": {
+  "ats": "ashby",
+  "slug": "nexxen"
+ },
+ "Singular": {
+  "ats": "ashby",
+  "slug": "singular"
+ },
+ "Stigg": {
+  "ats": "ashby",
+  "slug": "stigg"
+ },
+ "CHEQ": {
+  "ats": "comeet",
+  "slug": "cheq/65.005"
+ },
+ "Earnix": {
+  "ats": "comeet",
+  "slug": "earnix/93.00B"
+ },
+ "UVeye": {
+  "ats": "comeet",
+  "slug": "uveye/92.00F"
+ },
+ "Workiz": {
+  "ats": "comeet",
+  "slug": "workiz/F6.006"
+ },
+ "Zencity": {
+  "ats": "comeet",
+  "slug": "zencity/56.00B"
+ },
+ "DealHub": {
+  "ats": "comeet",
+  "slug": "dealhub/86.005"
+ },
+ "Gett": {
+  "ats": "comeet",
+  "slug": "gett/A0.002"
+ },
+ "Voyantis": {
+  "ats": "comeet",
+  "slug": "voyantis/86.00B"
+ },
+ "Bizzabo": {
+  "ats": "comeet",
+  "slug": "bizzabo/A5.000"
+ },
+ "Pango": {
+  "ats": "comeet",
+  "slug": "pango/59.002"
+ },
+ "SundaySky": {
+  "ats": "comeet",
+  "slug": "sundaysky/71.000"
+ },
+ "Appnext": {
+  "ats": "comeet",
+  "slug": "appnext/42.003"
+ },
+ "WSC Sports": {
+  "ats": "comeet",
+  "slug": "wsc-sports/93.007"
+ },
+ "Stampli": {
+  "ats": "comeet",
+  "slug": "stampli/F6.007"
+ },
+ "Gloat": {
+  "ats": "comeet",
+  "slug": "gloat/E5.000"
+ },
+ "Panaya": {
+  "ats": "comeet",
+  "slug": "panaya/61.00C"
+ },
+ "Digital Turbine": {
+  "ats": "browser",
+  "slug": "https://digitalturbine.wd501.myworkdayjobs.com/Digital_Turbine_External_Careers"
+ },
+ "Mesh Payments": {
+  "ats": "browser",
+  "slug": "https://www.meshpayments.com/careers"
+ },
+ "eToro": {
+  "ats": "browser",
+  "slug": "https://www.etoro.com/about/careers/"
+ },
+ "Priority Software": {
+  "ats": "browser",
+  "slug": "https://www.priority-software.com/careers/"
+ },
+ "Fundbox": {
+  "ats": "browser",
+  "slug": "https://fundbox.careers.hibob.com/jobs"
+ },
+ "Nova": {
+  "ats": "comeet",
+  "slug": "nova/A5.007"
+ },
+ "Ceragon": {
+  "ats": "comeet",
+  "slug": "ceragon/D3.003"
+ },
+ "Arbe Robotics": {
+  "ats": "comeet",
+  "slug": "arbe/C6.001"
+ },
+ "Wiliot": {
+  "ats": "comeet",
+  "slug": "wiliot/F6.003"
+ },
+ "InSightec": {
+  "ats": "comeet",
+  "slug": "insightec/4A.004"
+ },
+ "Imagry": {
+  "ats": "comeet",
+  "slug": "imagry/B7.00F"
+ },
+ "Percepto": {
+  "ats": "comeet",
+  "slug": "percepto/44.000"
+ },
+ "Taranis": {
+  "ats": "comeet",
+  "slug": "taranis/34.003"
+ },
+ "BlueWhite": {
+  "ats": "comeet",
+  "slug": "bluewhite/D5.00D"
+ },
+ "Autobrains": {
+  "ats": "comeet",
+  "slug": "autobrains/57.004"
+ },
+ "Orca AI": {
+  "ats": "comeet",
+  "slug": "Orca-AI/86.003"
+ },
+ "Smart Shooter": {
+  "ats": "comeet",
+  "slug": "smart-shooter/0B.00A"
+ },
+ "Immunai": {
+  "ats": "comeet",
+  "slug": "immunai/37.009"
+ },
+ "Lumus": {
+  "ats": "comeet",
+  "slug": "lumus/62.00F"
+ },
+ "Enlight Renewable Energy": {
+  "ats": "comeet",
+  "slug": "enlightenergy/99.006"
+ },
+ "Electreon": {
+  "ats": "greenhouse",
+  "slug": "electreon"
+ },
+ "Augury": {
+  "ats": "greenhouse",
+  "slug": "augury"
+ },
+ "ForSight Robotics": {
+  "ats": "browser",
+  "slug": "https://forsightrobotics.com/careers"
+ },
+ "Datadog": {
+  "ats": "greenhouse",
+  "slug": "datadog"
+ },
+ "MongoDB": {
+  "ats": "greenhouse",
+  "slug": "mongodb"
+ },
+ "Zscaler": {
+  "ats": "greenhouse",
+  "slug": "zscaler"
+ },
+ "Okta": {
+  "ats": "greenhouse",
+  "slug": "okta"
+ },
+ "Snowflake": {
+  "ats": "ashby",
+  "slug": "snowflake"
+ },
+ "ServiceNow": {
+  "ats": "smartrecruiters",
+  "slug": "servicenow"
  }
 }
