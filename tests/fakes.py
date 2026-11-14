@@ -179,7 +179,7 @@ class FakePage:
     def get_by_role(self, _role: str, name: Any = None) -> FakeRole:
         return FakeRole(self.btn)
 
-    async def eval_on_selector_all(self, selector: str, js: str) -> Any:
+    async def eval_on_selector_all(self, selector: str, js: str, arg: Any = None) -> Any:
         if "ld+json" in selector:
             return self.ld
         if js == "e=>e.length":
