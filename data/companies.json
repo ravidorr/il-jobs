@@ -2221,5 +2221,16 @@
   "status": "ok",
   "n_jobs": null,
   "n_israel": null
+ },
+ {
+  "name": "Tower Semiconductor",
+  "domain": "towersemi.com",
+  "careers_url": "https://careers.towersemi.com/search-result/?q=&category=&location=",
+  "ats": "browser",
+  "slug": "https://careers.towersemi.com/search-result/?q=&category=&location=",
+  "source": "override",
+  "status": "ok",
+  "n_jobs": null,
+  "n_israel": null
  }
 ]

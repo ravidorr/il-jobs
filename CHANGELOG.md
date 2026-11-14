@@ -2,6 +2,17 @@
 
 All notable changes are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.5] - 2026-11-14
+
+### Added
+
+- Pin for Tower Semiconductor: its career site has no feed, but one search page lists all 73 open positions (24 in Israel), so the browser crawler reads that page.
+
+### Changed
+
+- The browser crawler recognises `?job_id=N` job links and keeps the `job_id` when it tells jobs apart, instead of treating every such link as the same job.
+- Table rows split into cells on a single tab, and a row that repeats its title cell no longer fills the team with the title.
+
 ## [0.2.4] - 2026-11-14
 
 ### Added
