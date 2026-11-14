@@ -1,0 +1,26 @@
+{
+ "Datadog": {
+  "ats": "greenhouse",
+  "slug": "datadog"
+ },
+ "MongoDB": {
+  "ats": "greenhouse",
+  "slug": "mongodb"
+ },
+ "Zscaler": {
+  "ats": "greenhouse",
+  "slug": "zscaler"
+ },
+ "Okta": {
+  "ats": "greenhouse",
+  "slug": "okta"
+ },
+ "Snowflake": {
+  "ats": "ashby",
+  "slug": "snowflake"
+ },
+ "ServiceNow": {
+  "ats": "smartrecruiters",
+  "slug": "servicenow"
+ }
+}
