@@ -62,7 +62,9 @@ class FakeEl:
         disabled: bool = False,
         click_error: bool = False,
         visible: bool = True,
+        on_click: Callable[[], None] | None = None,
     ) -> None:
+        self.on_click = on_click
         self.attrs = attrs or {}
         self.disabled = disabled
         self.click_error = click_error
@@ -82,6 +84,11 @@ class FakeEl:
         if self.click_error:
             raise RuntimeError("click failed")
         self.clicks += 1
+
+    async def dispatch_event(self, _name: str) -> None:
+        self.clicks += 1
+        if self.on_click:
+            self.on_click()
 
 
 class FakeLoc:

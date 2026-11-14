@@ -10,6 +10,8 @@ from typing import Any, cast
 
 from playwright.async_api import async_playwright
 
+from discover import ISRAEL
+
 JOBLINK = re.compile(r"/(jobs?|positions?|careers?|openings?|vacanc\w+|job-?post\w*)/[^/?#]{4,}", re.I)
 NOT_JOB = re.compile(
     r"/(department|departments|category|team|teams|locations?|working-at|life-at|benefits|students?|early-careers?|login|search|saved|talent-network)\b|#",
@@ -29,6 +31,9 @@ NEXT_SELS = [
     'button:text-is("Next")',
     'a:text-is("Next >")',
 ]
+EF_SEARCH = "/api/pcsx/search"  # Eightfold career sites: the page's own search request
+EF_NEXT = 'button[aria-label="Next jobs" i]'
+EF_MAX_PAGES = 60  # ten jobs a page
 SETTLE_POLLS = 32  # at 250 ms: wait up to 8 s for a pagination click to show new job links
 MORE = re.compile(r"load more|show more|see more|view more|more jobs|more positions", re.I)
 LANGS = {
@@ -67,10 +72,61 @@ def _job(job_id: Any, title: Any, location: Any, url: Any, team: Any = "") -> di
     return {"job_id": job_id, "title": title, "location": location, "url": url, "team": team, "posted": ""}
 
 
+def _eightfold_jobs(resp_url: str, body: dict[str, Any]) -> list[dict[str, Any]]:
+    origin = cast("re.Match[str]", re.match(r"https?://[^/]+", resp_url))[0]
+    return [
+        _job(
+            str(p["id"]),
+            p.get("name", ""),
+            "; ".join(p.get("locations") or []),
+            origin + p["positionUrl"],
+            team=p.get("department") or "",
+        )
+        for p in body["data"]["positions"]
+    ]
+
+
+async def _eightfold_pages(page: Any, ef_jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Eightfold boards: use the page's own search results and press "Next jobs" for the rest.
+
+    The click is dispatched as an event because cookie banners often cover the button. Results come sorted by
+    distance from the searched place, so a page after the first with no Israel job ends the list."""
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def drain() -> list[dict[str, Any]]:
+        fresh = [j for j in ef_jobs if j["job_id"] not in seen]
+        seen.update(j["job_id"] for j in fresh)
+        out.extend(fresh)
+        return fresh
+
+    batch = drain()
+    for n in range(EF_MAX_PAGES - 1):
+        if n and not any(ISRAEL.search(j["location"]) for j in batch):
+            break
+        nxt = page.locator(EF_NEXT)
+        if not await nxt.count():
+            break
+        el = nxt.first
+        if await el.is_disabled() or await el.get_attribute("aria-disabled") == "true":
+            break
+        await el.dispatch_event("click")
+        batch = []
+        for _poll in range(SETTLE_POLLS):
+            await page.wait_for_timeout(250)
+            batch = drain()
+            if batch:
+                break
+        if not batch:
+            break
+    return out
+
+
 async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str, Any]] | None:  # noqa: PLR0912, PLR0915
     async with sem:
         page = await ctx.new_page()
         captured: list[dict[str, Any]] = []
+        ef_jobs: list[dict[str, Any]] = []
         link_count = 0
 
         async def on_resp(resp: Any) -> None:  # HiBob career boards load every job in one JSON response
@@ -95,7 +151,13 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
                                 )
                             )
 
+        async def on_search(resp: Any) -> None:  # Eightfold: every search page, first load and each "Next jobs"
+            with contextlib.suppress(Exception):
+                if EF_SEARCH in resp.url and resp.request.resource_type in ("xhr", "fetch") and resp.status == HTTP_OK:
+                    ef_jobs.extend(_eightfold_jobs(resp.url, await resp.json()))
+
         page.on("response", lambda r: asyncio.ensure_future(on_resp(r)))
+        page.on("response", lambda r: asyncio.ensure_future(on_search(r)))
         try:
             r = await page.goto(url, timeout=45000, wait_until="domcontentloaded")
             with contextlib.suppress(Exception):
@@ -111,6 +173,8 @@ async def crawl_one(ctx: Any, url: str, sem: asyncio.Semaphore) -> list[dict[str
             await page.wait_for_timeout(1000)
             if captured:
                 return captured
+            if ef_jobs:
+                return await _eightfold_pages(page, ef_jobs)
             for _ in range(
                 25
             ):  # lazy-loaded / paginated lists: scroll and press "load more" until the count stops growing

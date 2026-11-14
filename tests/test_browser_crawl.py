@@ -11,6 +11,8 @@ from tests.fakes import FakeCtx, FakeEl, FakeLoc, FakePage, FakePlaywright, Fake
 URL = "https://x.test/careers"
 SCROLL_CAP = 25
 TWO = 2
+THREE = 3
+FOUR = 4
 
 
 @pytest.fixture(autouse=True)
@@ -228,6 +230,135 @@ async def test_pagination_gives_up_waiting_for_new_links() -> None:
     assert len(jobs) == 1
     assert el.clicks == 1
     assert page._links_calls == 1 + browser_crawl.SETTLE_POLLS  # first collect, then one per poll until it gives up
+
+
+SEARCH = "https://jobs.acme.test/api/pcsx/search?domain=acme.test&location=Israel&start=0"
+
+
+def position(n: int, locations: list[str] | None = None) -> dict[str, Any]:
+    where = ["Israel, Tel Aviv"] if locations is None else locations
+    return {"id": n, "name": f"Role {n}", "locations": where, "positionUrl": f"/careers/job/{n}", "department": "Eng"}
+
+
+def search_response(*positions: dict[str, Any]) -> FakeResp:
+    return FakeResp(SEARCH, data={"status": 200, "data": {"positions": list(positions)}})
+
+
+def fire(page: FakePage, resp: FakeResp) -> None:
+    for handler in page.handlers.get("response", []):
+        handler(resp)
+
+
+def eightfold_page(first: FakeResp, batches: list[FakeResp], **el_kw: Any) -> tuple[FakePage, FakeEl]:
+    """Page whose first search response is `first`; each click on "Next jobs" fires the next of `batches`."""
+    queue = list(batches)
+    holder: dict[str, FakePage] = {}
+
+    def on_click() -> None:
+        if queue:
+            fire(holder["page"], queue.pop(0))
+
+    el = FakeEl(on_click=on_click, **el_kw)
+    page = FakePage(responses=[first], locators={browser_crawl.EF_NEXT: FakeLoc(1, el)})
+    holder["page"] = page
+    return page, el
+
+
+async def test_eightfold_single_page() -> None:
+    bare = {"id": THREE, "positionUrl": "/careers/job/3"}
+    page = FakePage(
+        responses=[search_response(position(1), position(TWO, ["Israel, Haifa", "Israel, Beer Sheva"]), bare)]
+    )
+    jobs = await run(page)
+    assert jobs == [
+        {
+            "job_id": "1",
+            "title": "Role 1",
+            "location": "Israel, Tel Aviv",
+            "url": "https://jobs.acme.test/careers/job/1",
+            "team": "Eng",
+            "posted": "",
+        },
+        {
+            "job_id": "2",
+            "title": "Role 2",
+            "location": "Israel, Haifa; Israel, Beer Sheva",
+            "url": "https://jobs.acme.test/careers/job/2",
+            "team": "Eng",
+            "posted": "",
+        },
+        {
+            "job_id": "3",
+            "title": "",
+            "location": "",
+            "url": "https://jobs.acme.test/careers/job/3",
+            "team": "",
+            "posted": "",
+        },
+    ]
+
+
+async def test_eightfold_follows_next_jobs_until_a_page_has_no_israel_jobs() -> None:
+    us = position(FOUR, ["United States, Austin"])
+    page, el = eightfold_page(
+        search_response(position(1), position(TWO)),
+        [search_response(position(THREE)), search_response(us)],
+    )
+    jobs = await run(page)
+    assert jobs is not None
+    assert [j["job_id"] for j in jobs] == ["1", "2", "3", "4"]
+    assert el.clicks == TWO  # the second click brought a page with no Israel job: the list is over
+
+
+async def test_eightfold_first_page_without_israel_jobs_does_not_stop_the_crawl() -> None:
+    page, el = eightfold_page(
+        search_response(position(1, ["United States, Austin"])),
+        [search_response(position(TWO))],
+    )
+    jobs = await run(page)
+    assert jobs is not None
+    assert [j["job_id"] for j in jobs] == ["1", "2"]
+    assert el.clicks == TWO  # the second click found nothing new and the crawl gave up
+
+
+@pytest.mark.parametrize("el_kw", [{"attrs": {"aria-disabled": "true"}}, {"disabled": True}])
+async def test_eightfold_stops_when_next_is_disabled(el_kw: dict[str, Any]) -> None:
+    page, el = eightfold_page(search_response(position(1)), [search_response(position(TWO))], **el_kw)
+    jobs = await run(page)
+    assert jobs is not None
+    assert len(jobs) == 1
+    assert el.clicks == 0
+
+
+async def test_eightfold_gives_up_when_a_click_brings_nothing_new() -> None:
+    page, el = eightfold_page(search_response(position(1)), [])
+    jobs = await run(page)
+    assert jobs is not None
+    assert len(jobs) == 1
+    assert el.clicks == 1
+
+
+async def test_eightfold_page_cap(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(browser_crawl, "EF_MAX_PAGES", THREE)
+    page, el = eightfold_page(search_response(position(1)), [search_response(position(n)) for n in range(TWO, 10)])
+    jobs = await run(page)
+    assert jobs is not None
+    assert len(jobs) == THREE
+    assert el.clicks == TWO
+
+
+async def test_eightfold_ignores_responses_that_are_not_a_search_result() -> None:
+    page = FakePage(
+        responses=[
+            FakeResp(SEARCH, data={"status": 500}),
+            FakeResp(SEARCH, status=404, data={"data": {"positions": [position(1)]}}),
+            FakeResp(SEARCH, resource_type="script", data={"data": {"positions": [position(1)]}}),
+        ],
+        link_fn=lambda i: [link("/jobs/job-one", "Job One")] if i == 1 else [],
+    )
+    jobs = await run(page)
+    assert jobs is not None
+    assert [j["title"] for j in jobs] == ["Job One"]
 
 
 @pytest.mark.parametrize("exe", ["/bin/chromium", None])
