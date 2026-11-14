@@ -1933,7 +1933,8 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 384,
-  "n_israel": 4
+  "n_israel": 4,
+  "israel_only": true
  },
  {
   "name": "MongoDB",
@@ -1944,7 +1945,8 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 391,
-  "n_israel": 7
+  "n_israel": 7,
+  "israel_only": true
  },
  {
   "name": "Zscaler",
@@ -1955,7 +1957,8 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 373,
-  "n_israel": 1
+  "n_israel": 1,
+  "israel_only": true
  },
  {
   "name": "Okta",
@@ -1966,7 +1969,8 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 362,
-  "n_israel": 2
+  "n_israel": 2,
+  "israel_only": true
  },
  {
   "name": "Snowflake",
@@ -1977,7 +1981,8 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 376,
-  "n_israel": 8
+  "n_israel": 8,
+  "israel_only": true
  },
  {
   "name": "ServiceNow",
@@ -1988,6 +1993,7 @@
   "source": "override",
   "status": "ok",
   "n_jobs": 818,
-  "n_israel": 25
+  "n_israel": 25,
+  "israel_only": true
  }
 ]

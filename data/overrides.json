@@ -471,26 +471,32 @@
  },
  "Datadog": {
   "ats": "greenhouse",
-  "slug": "datadog"
+  "slug": "datadog",
+  "israel_only": true
  },
  "MongoDB": {
   "ats": "greenhouse",
-  "slug": "mongodb"
+  "slug": "mongodb",
+  "israel_only": true
  },
  "Zscaler": {
   "ats": "greenhouse",
-  "slug": "zscaler"
+  "slug": "zscaler",
+  "israel_only": true
  },
  "Okta": {
   "ats": "greenhouse",
-  "slug": "okta"
+  "slug": "okta",
+  "israel_only": true
  },
  "Snowflake": {
   "ats": "ashby",
-  "slug": "snowflake"
+  "slug": "snowflake",
+  "israel_only": true
  },
  "ServiceNow": {
   "ats": "smartrecruiters",
-  "slug": "servicenow"
+  "slug": "servicenow",
+  "israel_only": true
  }
 }

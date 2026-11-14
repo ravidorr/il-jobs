@@ -106,6 +106,31 @@ def test_main_full_cycle(
     check.close()
 
 
+def test_main_israel_only_keeps_israel_jobs(workdir: Path, adapter: dict[str, Any]) -> None:
+    conn = run.init()
+    add_job(conn, "Big", "old-us", "Old US job", location="Austin, TX")
+    add_job(conn, "Big", "old-il", "Old IL job", location="Tel Aviv, Israel")
+    conn.close()
+    write_json(workdir / "data" / "companies.json", [{**co("Big"), "israel_only": True}, co("Plain")])
+    il = {**job("new-il"), "location": "Haifa, IL"}
+    us = {**job("new-us"), "location": "Chicago, IL"}
+    nowhere = {**job("no-loc"), "location": None}
+    adapter["big"] = [[{**job("old-il"), "location": "Tel Aviv, Israel"}, il, us, nowhere]]
+    adapter["plain"] = [[{**job("p1"), "location": "Austin, TX"}]]
+    run.main()
+    check = sqlite3.connect(run.DB)
+    rows = {(r[0], r[1]): r[2] for r in check.execute("SELECT company,job_id,status FROM jobs")}
+    assert rows[("Big", "old-il")] == "open"
+    assert rows[("Big", "new-il")] == "open"
+    assert ("Big", "new-us") not in rows  # not stored
+    assert ("Big", "no-loc") not in rows
+    assert rows[("Big", "old-us")] == "closed"  # was stored before the flag: closes
+    assert rows[("Plain", "p1")] == "open"  # no flag: kept whatever the location
+    logged = dict(check.execute("SELECT company, n_jobs FROM crawl_log"))
+    assert logged["Big"] == 2 + 0
+    check.close()
+
+
 def test_main_without_companies_as_script(workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
     write_json(workdir / "data" / "companies.json", [])
     runpy.run_module("run", run_name="__main__")
