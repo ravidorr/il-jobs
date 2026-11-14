@@ -492,5 +492,26 @@
  "ServiceNow": {
   "ats": "smartrecruiters",
   "slug": "servicenow"
+ },
+ "CropX": {
+  "ats": "workable",
+  "slug": "cropx",
+  "verify": false
+ },
+ "Capitolis": {
+  "ats": "greenhouse",
+  "slug": "capitolis"
+ },
+ "Torii": {
+  "ats": "greenhouse",
+  "slug": "toriihq"
+ },
+ "Hunters": {
+  "ats": "comeet",
+  "slug": "hunters/67.007"
+ },
+ "Explorium": {
+  "ats": "comeet",
+  "slug": "explorium/B4.00E"
  }
 }

@@ -1,7 +1,6 @@
 name,domain,segment
 XM Cyber,xmcyber.com,cyber_infra
 Silverfort,silverfort.com,cyber_infra
-Hunters,hunters.security,cyber_infra
 Lasso Security,lasso.security,cyber_infra
 Oligo Security,oligo.security,cyber_infra
 OX Security,ox.security,cyber_infra
@@ -24,13 +23,11 @@ Qodo,qodo.ai,cyber_infra
 Applitools,applitools.com,cyber_infra
 lakeFS,lakefs.io,cyber_infra
 Dataloop,dataloop.ai,cyber_infra
-Explorium,explorium.ai,cyber_infra
 SQream,sqream.com,cyber_infra
 Pecan AI,pecan.ai,cyber_infra
 Upsolver,upsolver.com,cyber_infra
 D-ID,d-id.com,cyber_infra
 Sunbit,sunbit.com,biz_software
-Capitolis,capitolis.com,biz_software
 Splitit,splitit.com,biz_software
 Walnut,walnut.io,biz_software
 Pay-Me,paymeservice.com,biz_software
@@ -45,7 +42,6 @@ DoubleVerify,doubleverify.com,biz_software
 Integral Ad Science,integralads.com,biz_software
 Madgicx,madgicx.com,biz_software
 Guesty,guesty.com,biz_software
-Torii,toriihq.com,biz_software
 Magic Software,magicsoftware.com,biz_software
 Ex Libris,exlibrisgroup.com,biz_software
 Playstudios,playstudios.com,biz_software
@@ -88,7 +84,6 @@ Tyto Care,tytocare.com,deeptech
 Diagnostic Robotics,diagnosticrobotics.com,deeptech
 Aleph Farms,aleph-farms.com,deeptech
 Tevel Aerobotics,tevel-tech.com,deeptech
-CropX,cropx.com,deeptech
 Evogene,evogene.com,deeptech
 Remilk,remilk.com,deeptech
 Redefine Meat,redefinemeat.com,deeptech
