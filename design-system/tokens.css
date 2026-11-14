@@ -1,0 +1,75 @@
+/*
+ * Misra design tokens. The only file allowed to contain raw colors.
+ * Light is the default; dark follows the system setting and can be forced
+ * with <html data-theme="dark"> or <html data-theme="light">.
+ */
+:root {
+  --font-sans: system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", menlo, consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-hero: clamp(2.75rem, 11vw, 4rem);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --radius-control: 14px;
+  --radius-card: 20px;
+  --radius-pill: 999px;
+  --border-width: 2px;
+  --shadow-sm: 3px 3px 0 var(--shadow);
+  --shadow-md: 5px 5px 0 var(--shadow);
+  --tap: 44px;
+
+  color-scheme: light;
+
+  --bg: #f5f0e6;
+  --panel: #fff;
+  --ink: #111;
+  --line: #111;
+  --shadow: #111;
+  --muted: #55525c;
+  --accent: #6c47ff;
+  --solid: #6c47ff;
+  --on-solid: #fff;
+  --accent-bg: #e6deff;
+  --lime: #d4ff4f;
+  --on-lime: #111;
+  --warn-bg: #ffe3b3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #121116;
+    --panel: #1d1b24;
+    --ink: #f5f0e6;
+    --line: #5a5570;
+    --shadow: #6c47ff;
+    --muted: #b4b0be;
+    --accent: #a58fff;
+    --accent-bg: #2b2447;
+    --warn-bg: #4a3512;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #121116;
+  --panel: #1d1b24;
+  --ink: #f5f0e6;
+  --line: #5a5570;
+  --shadow: #6c47ff;
+  --muted: #b4b0be;
+  --accent: #a58fff;
+  --accent-bg: #2b2447;
+  --warn-bg: #4a3512;
+}

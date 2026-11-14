@@ -1,0 +1,38 @@
+/*
+ * Sticker (status) and pill (tag). Lime is reserved for "new".
+ *   <span class="sticker">NEW</span>
+ *   <span class="sticker sticker-warn">OLD?</span>
+ *   <span class="pill">Tel Aviv</span>
+ *   <span class="pill pill-soft">Intern</span>
+ */
+.sticker {
+  display: inline-block;
+  padding: 2px var(--space-3);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--lime);
+  color: var(--on-lime);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  transform: rotate(3deg);
+}
+
+.sticker-warn {
+  background: var(--warn-bg);
+  color: var(--ink);
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px var(--space-3);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.pill-soft {
+  border-color: var(--accent-bg);
+  background: var(--accent-bg);
+  color: var(--ink);
+}

@@ -4,10 +4,15 @@ import json
 import re
 import sqlite3
 import time
+from pathlib import Path
 from typing import Any
 
 from digest import DB, PM_CORE
 from discover import ISRAEL
+
+# Stylesheets inlined into the page, in order. Raw colors live only in tokens.css.
+CSS_SOURCES = ("design-system/tokens.css", "design-system/components/*.css", "templates/dashboard.css")
+PLACEHOLDER = re.compile(r"__(DATA|CSS|JSONLD)__")
 
 JUNIOR = re.compile(r"intern\b|internship|student|junior|\bjr\b|graduate|entry|trainee|סטודנט", re.I)
 
@@ -17,6 +22,33 @@ def reason(note: str | None) -> str:
     if re.search(r"HTTP 40[13]|blocked page|Access Denied|Just a moment", n, re.I):
         return "its site blocks automated access from GitHub's servers"
     return n[:120] or "the last crawl failed"
+
+
+def read_css() -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8").strip() for pattern in CSS_SOURCES for path in sorted(Path().glob(pattern))
+    )
+
+
+def job_posting(job: dict[str, Any]) -> dict[str, Any]:
+    """Schema.org JobPosting for one role, so crawlers and agents can read the page without running scripts."""
+    posting: dict[str, Any] = {
+        "@type": "JobPosting",
+        "title": job["t"],
+        "hiringOrganization": {"@type": "Organization", "name": job["c"]},
+        "url": job["u"],
+        "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressLocality": job["l"]}},
+    }
+    if job["f"]:
+        posting["datePosted"] = job["f"]
+    if job["il"]:
+        posting["jobLocation"]["address"]["addressCountry"] = "IL"
+    return posting
+
+
+def safe_json(obj: Any) -> str:
+    """Compact JSON that is safe inside a <script> element."""
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
 
 def main() -> None:
@@ -66,13 +98,19 @@ def main() -> None:
                 "s": company in failing,
             }
         )
-    payload = json.dumps(
-        {"jobs": jobs, "gaps": gaps, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())},
-        ensure_ascii=False,
-        separators=(",", ":"),
-    ).replace("</", "<\\/")
+    payload = safe_json({"jobs": jobs, "gaps": gaps, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())})
+    listing = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": n, "item": job_posting(j)}
+            for n, j in enumerate((j for j in jobs if j["il"]), start=1)
+        ],
+    }
+    values = {"DATA": payload, "CSS": read_css(), "JSONLD": safe_json(listing)}
     with open("templates/dashboard.html", encoding="utf-8") as fh:
-        html = fh.read().replace("__DATA__", payload)
+        # one pass, so job text can never be mistaken for a placeholder
+        html = PLACEHOLDER.sub(lambda m: values[m.group(1)], fh.read())
     with open("docs/index.html", "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"gaps: {[g['c'] for g in gaps['blocked']]} failing, {len(untracked)} untracked")

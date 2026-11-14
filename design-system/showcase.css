@@ -1,0 +1,132 @@
+/* Layout for design-system/index.html only. Not shipped in the dashboard. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: var(--text-md) / 1.4 var(--font-sans);
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  display: grid;
+  gap: var(--space-7);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+h1 {
+  margin: var(--space-3) 0;
+  font-size: var(--text-hero);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+p {
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+pre {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-4);
+  overflow-x: auto;
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.panel {
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+}
+
+.swatch {
+  display: block;
+  height: 64px;
+  margin-bottom: var(--space-2);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+.sw-bg {
+  background: var(--bg);
+}
+
+.sw-panel {
+  background: var(--panel);
+}
+
+.sw-ink {
+  background: var(--ink);
+}
+
+.sw-muted {
+  background: var(--muted);
+}
+
+.sw-accent {
+  background: var(--accent);
+}
+
+.sw-solid {
+  background: var(--solid);
+}
+
+.sw-accent-bg {
+  background: var(--accent-bg);
+}
+
+.sw-lime {
+  background: var(--lime);
+}
+
+.sw-warn {
+  background: var(--warn-bg);
+}
+
+.tool-list {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.9;
+}

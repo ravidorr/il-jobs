@@ -1,0 +1,46 @@
+/*
+ * Field (input / select) and notice. Always pair a field with a <label>.
+ *   <label class="sr-only" for="q">Search</label>
+ *   <input class="field" id="q" type="search" placeholder="Search">
+ *   <div class="notice" role="note">Heads up: ...</div>
+ */
+.field {
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width) solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+}
+
+.field::placeholder {
+  color: var(--muted);
+}
+
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--line);
+  border-radius: 16px;
+  background: var(--warn-bg);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.highlight {
+  padding: 0 var(--space-2);
+  margin-inline-start: calc(-1 * var(--space-2));
+  background: var(--lime);
+  color: var(--on-lime);
+  box-decoration-break: clone;
+}

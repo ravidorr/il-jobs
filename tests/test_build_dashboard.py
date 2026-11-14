@@ -1,4 +1,5 @@
 import json
+import re
 import runpy
 import sqlite3
 from pathlib import Path
@@ -29,6 +30,14 @@ def log(conn: sqlite3.Connection, ts: str, company: str, ok: int, note: str | No
         "INSERT INTO crawl_log(ts,company,ats,ok,n_jobs,note) VALUES(?,?,?,?,?,?)", (ts, company, "x", ok, 0, note)
     )
     conn.commit()
+
+
+def write_css(workdir: Path) -> None:
+    (workdir / "design-system" / "components").mkdir(parents=True)
+    (workdir / "design-system" / "tokens.css").write_text(":root{--a:1}\n", encoding="utf-8")
+    (workdir / "design-system" / "components" / "b.css").write_text(".b{}\n", encoding="utf-8")
+    (workdir / "design-system" / "components" / "a.css").write_text(".a{}\n", encoding="utf-8")
+    (workdir / "templates" / "dashboard.css").write_text("body{}\n", encoding="utf-8")
 
 
 def prepare(workdir: Path) -> None:
@@ -99,3 +108,43 @@ def test_old_schema_without_note_column_runs_as_script(workdir: Path) -> None:
     payload = read_payload(workdir)
     assert payload["gaps"]["blocked"] == [{"c": "Old", "why": "the last crawl failed", "last": "never"}]
     assert payload["jobs"] == []
+
+
+def test_read_css_inlines_sources_in_order(workdir: Path) -> None:
+    write_css(workdir)
+    assert build_dashboard.read_css() == ":root{--a:1}\n.a{}\n.b{}\nbody{}"
+
+
+def test_job_posting() -> None:
+    job = {"c": "Acme", "t": "PM", "u": "https://x.test/1", "l": "Tel Aviv", "f": "2024-01-02", "il": True}
+    posting = build_dashboard.job_posting(job)
+    assert posting["title"] == "PM"
+    assert posting["hiringOrganization"]["name"] == "Acme"
+    assert posting["datePosted"] == "2024-01-02"
+    assert posting["jobLocation"]["address"] == {
+        "@type": "PostalAddress",
+        "addressLocality": "Tel Aviv",
+        "addressCountry": "IL",
+    }
+    abroad = build_dashboard.job_posting({**job, "f": "", "il": False})
+    assert "datePosted" not in abroad
+    assert "addressCountry" not in abroad["jobLocation"]["address"]
+
+
+def test_page_gets_css_and_json_ld(db: sqlite3.Connection, workdir: Path) -> None:
+    write_css(workdir)
+    write_json(workdir / "data" / "companies.json", [])
+    (workdir / "templates" / "dashboard.html").write_text(
+        "<style>__CSS__</style><script>__JSONLD__</script><script>__DATA__</script>", encoding="utf-8"
+    )
+    add_job(db, "Acme", "1", "Product Manager __CSS__ </script>")
+    add_job(db, "Acme", "2", "Accountant", location="London")
+    db.close()
+    build_dashboard.main()
+    html = (workdir / "docs" / "index.html").read_text(encoding="utf-8")
+    css, ld, data = re.fullmatch(r"<style>(.*)</style><script>(.*)</script><script>(.*)</script>", html, re.S).groups()  # type: ignore[union-attr]
+    assert css.endswith("body{}")
+    listing = json.loads(ld.replace("<\\/", "</"))
+    assert [i["item"]["title"] for i in listing["itemListElement"]] == ["Product Manager __CSS__ </script>"]
+    assert listing["itemListElement"][0]["position"] == 1
+    assert "__CSS__" in json.loads(data.replace("<\\/", "</"))["jobs"][0]["t"]

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Misra design system</title>
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<style>
+@import "tokens.css";
+@import "components/button.css";
+@import "components/chip.css";
+@import "components/sticker.css";
+@import "components/card.css";
+@import "components/story.css";
+@import "components/field.css";
+@import "showcase.css";
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p><span class="pill">Design system</span></p>
+    <h1><span class="highlight">Scan fast.</span><br>Decide faster.</h1>
+    <p>Misra is a daily drop of entry-level and student roles in Israel. People open it on a phone, thumb through, apply or move on. Big type, one action per card, loud only about what is new. Light and dark. Plain HTML and CSS.</p>
+    <p><button type="button" class="btn btn-pill" id="theme">Theme: auto</button></p>
+  </header>
+
+  <section aria-labelledby="color">
+    <h2 id="color">Color</h2>
+    <p>Cream and ink carry the layout. Violet means act, lime means new, amber means be careful. Every token has a light and a dark value in <code>tokens.css</code>.</p>
+    <div class="grid">
+      <div><span class="swatch sw-bg"></span><code>--bg</code></div>
+      <div><span class="swatch sw-panel"></span><code>--panel</code></div>
+      <div><span class="swatch sw-ink"></span><code>--ink</code></div>
+      <div><span class="swatch sw-muted"></span><code>--muted</code></div>
+      <div><span class="swatch sw-accent"></span><code>--accent</code></div>
+      <div><span class="swatch sw-solid"></span><code>--solid</code></div>
+      <div><span class="swatch sw-accent-bg"></span><code>--accent-bg</code></div>
+      <div><span class="swatch sw-lime"></span><code>--lime</code></div>
+      <div><span class="swatch sw-warn"></span><code>--warn-bg</code></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="type">
+    <h2 id="type">Type and shape</h2>
+    <p>System UI stack, heavy weights, tight tracking, no webfont. Radii 14, 20 and pill. 2px borders and hard offset shadows, never blur. Targets are at least 44px.</p>
+  </section>
+
+  <section aria-labelledby="buttons">
+    <h2 id="buttons">Buttons, chips, stickers</h2>
+    <div class="panel">
+      <div class="row">
+        <a class="btn btn-primary" href="#buttons">Apply ↗</a>
+        <button type="button" class="btn btn-pill">Show 8 more</button>
+        <button type="button" class="btn btn-link">Not for me</button>
+      </div>
+      <div class="row">
+        <button type="button" class="chip" aria-pressed="true">Everything</button>
+        <button type="button" class="chip" aria-pressed="false">Product</button>
+        <button type="button" class="chip chip-new" aria-pressed="true">New only</button>
+      </div>
+      <div class="row">
+        <span class="sticker">NEW</span>
+        <span class="sticker sticker-warn">OLD?</span>
+        <span class="pill">Tel Aviv</span>
+        <span class="pill pill-soft">Intern</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="fields">
+    <h2 id="fields">Fields, stories, notice</h2>
+    <div class="panel">
+      <div class="row">
+        <label class="sr-only" for="demo-search">Search</label>
+        <input class="field" id="demo-search" type="search" placeholder="Search">
+        <button type="button" class="story story-new" aria-pressed="false" aria-label="Acme, 2 new roles"><span class="story-badge" aria-hidden="true">A</span><span class="story-name">Acme</span></button>
+        <button type="button" class="story" aria-pressed="true" aria-label="Lumen, 1 role"><span class="story-badge" aria-hidden="true">L</span><span class="story-name">Lumen</span></button>
+      </div>
+      <p class="notice" role="note">Heads up: 2 companies could not be checked today, so their roles may be old.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="card-h">
+    <h2 id="card-h">Role card</h2>
+    <article class="card" data-job-id="Acme|1" data-company="Acme" data-category="product" data-new="true" data-stale="false" data-discarded="false">
+      <span class="sticker card-flag">NEW</span>
+      <p class="card-company">Acme Robotics</p>
+      <h3 class="card-title"><a href="#card-h">Associate Product Manager</a></h3>
+      <p class="card-tags"><span class="pill">Tel Aviv</span><span class="pill pill-soft">Product</span><span class="card-seen">today</span></p>
+      <p class="card-actions"><a class="btn btn-primary" href="#card-h">Apply ↗</a><button type="button" class="btn btn-link">Not for me</button></p>
+    </article>
+  </section>
+
+  <section aria-labelledby="agents">
+    <h2 id="agents">Built for agents too</h2>
+    <p>The page a person scans is one an agent can read and drive. Cards are <code>article</code> elements with <code>data-job-id</code>, <code>data-company</code>, <code>data-category</code>, <code>data-new</code>, <code>data-stale</code> and <code>data-discarded</code>. Every open role is in a schema.org JobPosting JSON-LD block. The dashboard registers these WebMCP tools on <code>navigator.modelContext</code> when the browser offers it:</p>
+    <ul class="tool-list">
+      <li>search_jobs(query, category, company, newOnly, includeDiscarded, allLocations, sort, limit)</li>
+      <li>list_new_jobs(limit)</li>
+      <li>get_job(id)</li>
+      <li>discard_job(id), restore_job(id)</li>
+      <li>list_coverage_gaps()</li>
+    </ul>
+  </section>
+</main>
+<script>
+(function(){
+var b=document.getElementById('theme'),root=document.documentElement,modes=['auto','light','dark'];
+b.addEventListener('click',function(){
+  var cur=root.getAttribute('data-theme')||'auto',next=modes[(modes.indexOf(cur)+1)%modes.length];
+  if(next==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',next);
+  b.textContent='Theme: '+next});
+})();
+</script>
+</body>
+</html>
